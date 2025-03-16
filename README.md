@@ -1,1 +1,1 @@
-# 2-holly-community-be
+# Community Service API (using Spring Boot & MySQL)
