@@ -20,22 +20,17 @@ import java.util.Optional;
 public class ImageService {
 
     private final ImageRepository imageRepository;
-    private final UserRepository userRepository;
-    private final PostRepository postRepository;
 
     @Value("${file.upload-dir}") // application.properties에서 설정한 경로
     private String uploadDir;
 
-    public ImageService(ImageRepository imageRepository, UserRepository userRepository, PostRepository postRepository) {
+    public ImageService(ImageRepository imageRepository) {
         this.imageRepository = imageRepository;
-        this.userRepository = userRepository;
-        this.postRepository = postRepository;
     }
 
-
-    // 프로필 이미지 저장
+    // 이미지 저장
     @Transactional
-    public Image saveProfileImage(MultipartFile file) throws IOException {
+    public Image saveImage(MultipartFile file) throws IOException {
         // 저장할 디렉토리 생성 (없으면 생성)
         File directory = new File(uploadDir);
         if (!directory.exists()) {
@@ -61,28 +56,6 @@ public class ImageService {
         imageRepository.deleteById(imageId);
     }
 
-    // 게시글 이미지 저장
-    @Transactional
-    public Image savePostImage(MultipartFile file) throws IOException {
-        // 저장할 디렉토리 생성 (없으면 생성)
-        File directory = new File(uploadDir);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
-        // 파일 저장 경로 설정
-        String originalName = file.getOriginalFilename();
-        if (originalName.length() > 50) {
-            originalName = originalName.substring(0, 50); // 최대 50자로 잘라냄
-        }
-        String fileName = System.currentTimeMillis() + "_" + originalName;
-        Path filePath = Paths.get(uploadDir, fileName);
-        Files.write(filePath, file.getBytes());
-
-        // DB에 파일 정보 저장
-        Image image = new Image(fileName, "/uploads/" + fileName);
-        return imageRepository.save(image);
-    }
 
     // 게시글 이미지 조회 (ID로 검색)
     public Optional<Image> getImageByPostId(Long id) {

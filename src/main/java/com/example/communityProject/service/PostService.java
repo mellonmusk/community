@@ -1,6 +1,8 @@
 package com.example.communityProject.service;
 
 import com.example.communityProject.dto.PostDto;
+import com.example.communityProject.dto.UserDto;
+import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.Post;
 import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
@@ -8,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +30,8 @@ public class PostService {
     private LikeRepository likeRepository;
     @Autowired
     private ImageRepository imageRepository;
+    @Autowired
+    private ImageService imageService;
 
     public List<PostDto> getPostList() {
         return postRepository.findAll()
@@ -74,5 +80,25 @@ public class PostService {
         // 대상 삭제하기
         postRepository.delete(target);
         return PostDto.createPostDto(target);
+    }
+
+    @Transactional
+    public PostDto updatePostImage(Long postId, MultipartFile file) throws IOException {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 업데이트 실패, 대상 게시글이 없습니다."));
+
+        // 새 이미지 저장
+        Image newImage = imageService.saveImage(file);
+
+        // 기존 이미지 삭제
+        if (post.getPostImage() != null) {
+            imageService.deleteImage(post.getPostImage().getId());
+        }
+
+        // 새로운 이미지 설정
+        post.setPostImage(newImage);
+        Post updatedPost = postRepository.save(post);
+
+        return PostDto.createPostDto(updatedPost);
     }
 }

@@ -3,6 +3,8 @@ package com.example.communityProject.entity;
 import com.example.communityProject.dto.PostDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Getter
+@Setter
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +30,7 @@ public class Post {
     private Image postImage; // 파일 디렉토리
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "author_id", nullable = false)
     private User user;
 
@@ -45,10 +49,10 @@ public class Post {
         }
         // 엔티티 생성 및 반환
         return new Post(
-                dto.getId(),
+                null,
                 dto.getTitle(),
                 dto.getContent(),
-                dto.getImage(),
+                null,
                 user,
 //                dto.getLikes(),
                 dto.getViews(),
@@ -66,9 +70,6 @@ public class Post {
         }
         if (dto.getContent() != null) {
             this.content = dto.getContent();
-        }
-        if (dto.getImage() != null) {
-            this.postImage = dto.getImage();
         }
 //        if (dto.getLikes() != null) {
 //            this.likes = dto.getLikes();

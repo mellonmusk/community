@@ -17,7 +17,7 @@ public class PostDto {
     private Long id;
     private String title;
     private String content;
-    private Image image;     // 파일 디렉토리 (null 허용)
+    private String image;
 //    private Long likes;    // 좋아요 수
     private Long authorId;
     private Long views;
@@ -28,7 +28,8 @@ public class PostDto {
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
-                post.getPostImage(),
+                null,
+//                post.getPostImage().getFilePath(),
 //                post.getLikes(),
                 post.getUser().getId(),
                 post.getViews(),

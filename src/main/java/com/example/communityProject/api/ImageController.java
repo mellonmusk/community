@@ -1,9 +1,11 @@
 package com.example.communityProject.api;
 
+import com.example.communityProject.dto.PostDto;
 import com.example.communityProject.dto.UserDto;
 import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.User;
 import com.example.communityProject.service.ImageService;
+import com.example.communityProject.service.PostService;
 import com.example.communityProject.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpHeaders;
@@ -24,9 +26,11 @@ public class ImageController {
 
     private final ImageService imageService;
     private final UserService userService;
-    public ImageController(ImageService imageService, UserService userService) {
+    private final PostService postService;
+    public ImageController(ImageService imageService, UserService userService, PostService postService) {
         this.imageService = imageService;
         this.userService = userService;
+        this.postService = postService;
     }
 
     // 프로필 이미지 업로드
@@ -44,10 +48,12 @@ public class ImageController {
 
     // 게시글 이미지 업로드
     @PostMapping("/post/{postId}")
-    public ResponseEntity<Image> uploadPostImage(@PathVariable Long postId, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<PostDto> uploadPostImage(@PathVariable Long postId, @RequestParam("file") MultipartFile file) {
         try {
-            Image savedImage = imageService.savePostImage(file);
-            return ResponseEntity.ok(savedImage);
+            PostDto updatedPost = postService.updatePostImage(postId, file);
+            return ResponseEntity.ok(updatedPost);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -79,7 +85,7 @@ public class ImageController {
         Optional<Image> imageOptional = imageService.getImageByPostId(id);
 
         if (imageOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.noContent().build();
         }
 
         Image image = imageOptional.get();

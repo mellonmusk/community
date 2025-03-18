@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -17,9 +19,11 @@ public class Image {
     private Long id;
 
     @OneToOne(mappedBy = "profileImage")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @OneToOne(mappedBy = "postImage")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
 
     private String fileName;  // 저장된 파일 이름

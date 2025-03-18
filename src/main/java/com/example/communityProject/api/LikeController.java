@@ -25,12 +25,12 @@ public class LikeController {
         LikeDto createdDto = likeService.createLike(postId, dto);
         return ResponseEntity.status(HttpStatus.OK).body(createdDto);
     }
-//    // 좋아요 여부 조회
-//    @GetMapping("/api/posts/{postId}/likes/{userId}")
-//    public ResponseEntity<Boolean> checkLike(@PathVariable Long postId, @PathVariable Long userId) {
-//        boolean isLiked = likeService.getLike(postId, userId);
-//        return ResponseEntity.status(HttpStatus.OK).body(isLiked);
-//    }
+    // 좋아요 여부 조회
+    @GetMapping("/api/posts/{postId}/likes/{userId}")
+    public ResponseEntity<Boolean> checkLike(@PathVariable Long postId, @PathVariable Long userId) {
+        boolean isLiked = likeService.getLike(postId, userId);
+        return ResponseEntity.status(HttpStatus.OK).body(isLiked);
+    }
     // 좋아요 취소
     @DeleteMapping("/api/posts/{postId}/likes/{userId}")
     public ResponseEntity<LikeDto> deleteLike(@PathVariable Long postId, @PathVariable Long userId){

@@ -15,4 +15,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     // 특정 닉네임의 모든 게시글 조회
     @Query(value = "SELECT * FROM post WHERE author_id = :userId", nativeQuery = true)
     List<Post> findByUserId(Long userId);
+
+    void deleteByUser_Id(Long id);
 }

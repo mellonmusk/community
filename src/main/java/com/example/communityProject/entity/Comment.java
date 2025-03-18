@@ -3,6 +3,8 @@ package com.example.communityProject.entity;
 import com.example.communityProject.dto.CommentDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +23,7 @@ public class Comment {
     private Post post; // 해당 댓글의 부모 게시글
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "author_id", nullable = false)
     private User user; // 댓글 작성자
 

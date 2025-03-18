@@ -3,8 +3,7 @@ package com.example.communityProject.service;
 import com.example.communityProject.dto.UserDto;
 import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.User;
-import com.example.communityProject.repository.ImageRepository;
-import com.example.communityProject.repository.UserRepository;
+import com.example.communityProject.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserService {
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private LikeRepository likeRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -58,7 +63,13 @@ public class UserService {
     public UserDto deleteUser(Long id) {
         User target = userRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("사용자 삭제 실패, 대상 사용자가 없습니다."));
-        imageRepository.deleteByUser_Id(id);
+        // 관련 댓글 삭제
+        commentRepository.deleteByPost_Id(id);
+        // 관련 좋아요 삭제
+        likeRepository.deleteByPost_Id(id);
+        // 관련 게시글 삭제
+        postRepository.deleteByUser_Id(id);
+
         userRepository.delete(target);
         return UserDto.createUserDto(target);
     }
@@ -69,7 +80,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자 프로필 업데이트 실패, 대상 사용자가 없습니다."));
 
         // 새 이미지 저장
-        Image newImage = imageService.saveProfileImage(file);
+        Image newImage = imageService.saveImage(file);
 
         // 기존 이미지 삭제
         if (user.getProfileImage() != null) {

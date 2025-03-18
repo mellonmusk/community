@@ -1,24 +1,13 @@
-INSERT INTO member(email, image_url, password, nickname) VALUES('user@example.com', '/uploads/1742197880712_개.png', 'User@1234' '개');
-INSERT INTO member(email, image_url, password, nickname) VALUES('hobbit@gmail.com', '', 'User@567', '호빗');
-INSERT INTO member(email, image_url, password, nickname) VALUES('student@gmail.com', '', 'User@1111', '학생1');
+INSERT INTO member(email, image_id, password, nickname) VALUES('user@example.com', 2, 'User@1234' '개');
+INSERT INTO member(email, image_id, password, nickname) VALUES('hobbit@gmail.com', 3, 'User@567', '호빗');
+INSERT INTO member(email, image_id, password, nickname) VALUES('student@gmail.com', null, 'User@1111', '학생1');
 
-INSERT INTO post(title,content) VALUES('title1', 'content1');
-INSERT INTO post(title,content) VALUES('title2', 'content2');
-INSERT INTO post(title,content) VALUES('title3', 'content3');
+INSERT INTO post(title,content, likes, title, views, author_id, created_at) VALUES('질문 있습니다.', '오늘 수업하나요?', 1, 8, 1, '2025-03-17 01:33:45.222341');
+INSERT INTO post(title,content, likes, title, views, author_id, created_at) VALUES('cors란 무엇인가요?', 'cors와 csrf에 대해 설명해주세요.', 2, 0, 2, '2025-03-17 10:08:57.530307');
 
-INSERT INTO post(title,content) VALUES('당신의 인생영화는?', '댓글로 작성해주세요');
-INSERT INTO post(title,content) VALUES('당신의 소울 푸드는?', '제곧내');
-INSERT INTO post(title,content) VALUES('당신의 취미는?', '댓글 ㄱㄱ');
-
-INSERT INTO comment(post_id,author_id, body) VALUES(4, 1, 'john wick4');
+INSERT INTO comment(post_id,author_id, body) VALUES(1, 2, '');
 INSERT INTO comment(post_id,author_id, body) VALUES(4, 2, 'top gun');
 INSERT INTO comment(post_id,author_id, body) VALUES(4, 3, 'mission impossible');
-
-
-INSERT INTO comment(post_id,author_id, body) VALUES(5, 3, 'chicken');
-INSERT INTO comment(post_id,author_id, body) VALUES(5, 2, 'noodle');
-INSERT INTO comment(post_id,author_id, body) VALUES(5, 1, 'barbeque');
-
 
 INSERT INTO comment(post_id,author_id, body) VALUES(6, 2, 'watch movie on netflix');
 INSERT INTO comment(post_id,author_id, body) VALUES(6, 2, 'listen to music');

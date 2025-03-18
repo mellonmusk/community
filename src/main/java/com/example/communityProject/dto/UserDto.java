@@ -24,7 +24,7 @@ public class UserDto {
                 user.getEmail(),
                 user.getPassword(),
                 user.getNickname(),
-                user.getProfileImage().getFilePath()
+                null
         );
     }
 }
