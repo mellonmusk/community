@@ -1,10 +1,9 @@
 package com.example.communityProject.service;
 
-import com.example.communityProject.dto.PostForm;
+import com.example.communityProject.dto.PostDto;
 import com.example.communityProject.entity.Post;
 import com.example.communityProject.entity.User;
-import com.example.communityProject.repository.PostRepository;
-import com.example.communityProject.repository.UserRepository;
+import com.example.communityProject.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,63 +20,59 @@ public class PostService {
     private PostRepository postRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private LikeRepository likeRepository;
+    @Autowired
+    private ImageRepository imageRepository;
 
-    public List<PostForm> getPostList() {
+    public List<PostDto> getPostList() {
         return postRepository.findAll()
                 .stream()
-                .map(post -> PostForm.createPostDto(post))
+                .map(post -> PostDto.createPostDto(post))
                 .collect(Collectors.toList());
     }
 
-    public PostForm getPost(Long id) {
+    public PostDto getPost(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 조회 실패, 대상 게시글이 없습니다."));
-        return PostForm.createPostDto(post);
+        return PostDto.createPostDto(post);
     }
 
     @Transactional
-    public PostForm createPost(PostForm dto) {
+    public PostDto createPost(PostDto dto) {
         User user = userRepository.findById(dto.getAuthorId())
                 .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패, 작성자 ID가 유효하지 않습니다."));
         Post post = Post.createPost(dto, user, LocalDateTime.now());
         Post created = postRepository.save(post);
-        return PostForm.createPostDto(created);
+        return PostDto.createPostDto(created);
     }
 
     @Transactional
-    public PostForm updatePost(Long id, PostForm dto) {
+    public PostDto updatePost(Long id, PostDto dto) {
         // 타깃 조회하기
         Post target = postRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("게시글 수정 실패, 대상 게시글이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("게시글 수정 실패, 대상 게시글이 없습니다."));
         // 업데이트하기
         target.patch(dto); // 기존 데이터에 새 데이터 붙이기
         Post updated = postRepository.save(target);
-        return PostForm.createPostDto(updated);
+        return PostDto.createPostDto(updated);
     }
 
     @Transactional
-    public PostForm deletePost(Long id) {
+    public PostDto deletePost(Long id) {
         // 대상 찾기
         Post target = postRepository.findById(id)
-                .orElseThrow(()->new IllegalArgumentException("게시글 삭제 실패, 대상 게시글이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("게시글 삭제 실패, 대상 게시글이 없습니다."));
+        // 관련 댓글 삭제
+        commentRepository.deleteByPost_Id(id);
+        // 관련 좋아요 삭제
+        likeRepository.deleteByPost_Id(id);
+        // 관련 이미지 삭제
+        imageRepository.deleteByPost_Id(id);
         // 대상 삭제하기
         postRepository.delete(target);
-        return PostForm.createPostDto(target);
+        return PostDto.createPostDto(target);
     }
-
-//    @Transactional
-//    public List<Post> createPosts(List<PostForm> dtos) {
-//        // dto 묶음을 엔티티 묶음으로 변환하기
-//        List<Post> postList = dtos.stream()
-//                .map(dto -> dto.toEntity())
-//                .collect(Collectors.toList());
-//        // 엔티티 묶음을 db에 저장하기
-//        postList.stream()
-//                .forEach(post -> postRepository.save(post));
-//        // 강제 예외 발생시키기
-//        postRepository.findById(-1L)
-//                .orElseThrow(()->new IllegalArgumentException("실패"));
-//        // 결과 값 반환하기
-//        return postList;
-//    }
 }

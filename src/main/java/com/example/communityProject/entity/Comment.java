@@ -2,10 +2,7 @@ package com.example.communityProject.entity;
 
 import com.example.communityProject.dto.CommentDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -27,7 +24,7 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private User user; // 댓글 작성자
 
-    @Column
+    @Lob
     private String body; // 댓글 본문
 
     @Column(updatable = false)
@@ -41,7 +38,7 @@ public class Comment {
         if (dto.getPostId() != post.getId()) { // json 데이터와 url요청 정보가 다르면 안됨.(dto에서 가져온 부모 게시글과 entity에서 가져온 부모 게시글의 id가 다르면 안됨.)
             throw new IllegalArgumentException("댓글 생성 실패, 게시글의 id가 잘못됐습니다.");
         }
-        if (dto.getAuthorId() != user.getId()) { // 없는 사용자 id를 사용하면 안됨.
+        if (dto.getAuthorId() != user.getId()) {
             throw new IllegalArgumentException("댓글 생성 실패, 작성자의 id가 잘못됐습니다.");
         }
         // 엔티티 생성 및 반환

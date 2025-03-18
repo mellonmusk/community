@@ -1,6 +1,6 @@
-INSERT INTO member(email, password, nickname) VALUES('mango@gmail.com', '1234', 'mango');
-INSERT INTO member(email, password, nickname) VALUES('grape@gmail.com', '1234', 'grape');
-INSERT INTO member(email, password, nickname) VALUES('fig@gmail.com', '1234', 'fig');
+INSERT INTO member(email, image_url, password, nickname) VALUES('user@example.com', '/uploads/1742197880712_개.png', 'User@1234' '개');
+INSERT INTO member(email, image_url, password, nickname) VALUES('hobbit@gmail.com', '', 'User@567', '호빗');
+INSERT INTO member(email, image_url, password, nickname) VALUES('student@gmail.com', '', 'User@1111', '학생1');
 
 INSERT INTO post(title,content) VALUES('title1', 'content1');
 INSERT INTO post(title,content) VALUES('title2', 'content2');

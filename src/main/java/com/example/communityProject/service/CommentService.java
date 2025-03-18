@@ -27,17 +27,6 @@ public class CommentService {
     private UserRepository userRepository;
 
     public List<CommentDto> getComments(Long postId) {
-//        // 댓글 조회
-//        List<Comment> comments = commentRepository.findByPostId(postId);
-//        // entity -> dto
-//        List<CommentDto> dtos = new ArrayList<CommentDto>();
-//        for (int i = 0; i < comments.size(); i++) {
-//            Comment c = comments.get(i);
-//            CommentDto dto = CommentDto.createCommentDto(c);
-//            dtos.add(dto);
-//        }
-//        // 결과 반환
-//        return dtos;
         return commentRepository.findByPostId(postId)
                 .stream()
                 .map(comment -> CommentDto.createCommentDto(comment))

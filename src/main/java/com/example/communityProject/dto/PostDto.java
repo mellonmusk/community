@@ -1,5 +1,6 @@
 package com.example.communityProject.dto;
 
+import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,31 +13,26 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 @Getter
-public class PostForm {
+public class PostDto {
     private Long id;
     private String title;
     private String content;
-    private String image;     // 파일 디렉토리 (null 허용)
-    private Long likes;    // 좋아요 수
-    private Long authorId=1L;
+    private Image image;     // 파일 디렉토리 (null 허용)
+//    private Long likes;    // 좋아요 수
+    private Long authorId;
     private Long views;
     private LocalDateTime createdAt;
 
-    public static PostForm createPostDto(Post post) {
-        return new PostForm(
+    public static PostDto createPostDto(Post post) {
+        return new PostDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
-                post.getImage(),
-                post.getLikes(),
+                post.getPostImage(),
+//                post.getLikes(),
                 post.getUser().getId(),
                 post.getViews(),
                 post.getCreatedAt()
         );
     }
-
-//
-//    public Post toEntity() {
-//        return new Post(id, title, content, authorId, views, createdAt);
-//    }
 }
