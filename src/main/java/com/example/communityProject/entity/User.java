@@ -7,6 +7,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
@@ -28,10 +31,21 @@ public class User {
     @Column(unique = true, length=10)
     private String nickname;
 
-    @OneToOne
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "image_id")
     private Image profileImage; // 프로필 이미지 URL 저장
+
+    // Bidirectional one-to-many mapping for comments.
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    // Bidirectional one-to-many mapping for likes.
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
+    // Bidirectional one-to-many mapping for posts.
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
 
     public static User createUser(UserDto dto, PasswordEncoder passwordEncoder) {
         // 예외 발생
@@ -44,7 +58,10 @@ public class User {
                 dto.getEmail(),
                 passwordEncoder.encode(dto.getPassword()),
                 dto.getNickname(),
-                null // 프로필 이미지는 별도로 저장
+                null, // 프로필 이미지는 별도로 저장
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>()
         );
     }
 

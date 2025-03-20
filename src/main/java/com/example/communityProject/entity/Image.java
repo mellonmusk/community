@@ -19,11 +19,10 @@ public class Image {
     private Long id;
 
     @OneToOne(mappedBy = "profileImage")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    @OneToOne(mappedBy = "postImage")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
     private Post post;
 
     private String fileName;  // 저장된 파일 이름

@@ -89,14 +89,17 @@ public class PostService {
 
         // 새 이미지 저장
         Image newImage = imageService.saveImage(file);
+        newImage.setPost(post);
 
         // 기존 이미지 삭제
-        if (post.getPostImage() != null) {
-            imageService.deleteImage(post.getPostImage().getId());
+        if (!post.getImages().isEmpty()) {
+            Image oldImage = post.getImages().get(0);
+            imageService.deleteImage(oldImage.getId());
+            post.getImages().remove(0);
         }
 
         // 새로운 이미지 설정
-        post.setPostImage(newImage);
+        post.getImages().add(newImage);
         Post updatedPost = postRepository.save(post);
 
         return PostDto.createPostDto(updatedPost);

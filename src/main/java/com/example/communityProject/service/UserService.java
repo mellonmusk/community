@@ -70,13 +70,11 @@ public class UserService {
     public UserDto deleteUser(Long id) {
         User target = userRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("사용자 삭제 실패, 대상 사용자가 없습니다."));
-        // 관련 댓글 삭제
-        commentRepository.deleteByPost_Id(id);
-        // 관련 좋아요 삭제
-        likeRepository.deleteByPost_Id(id);
-        // 관련 게시글 삭제
-        postRepository.deleteByUser_Id(id);
 
+        commentRepository.deleteByUser_Id(id);
+        likeRepository.deleteByUser_Id(id);
+        postRepository.deleteByUser_Id(id);
+        imageRepository.delete(target.getProfileImage());
         userRepository.delete(target);
         return UserDto.createUserDto(target);
     }
