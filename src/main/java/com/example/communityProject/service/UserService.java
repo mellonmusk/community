@@ -6,14 +6,20 @@ import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,6 +39,9 @@ public class UserService {
     private ImageService imageService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${file.upload-dir}") // application.properties에서 설정한 경로
+    private String uploadDir;
 
     public List<UserDto> getUserList() {
         return userRepository.findAll()
@@ -74,29 +83,8 @@ public class UserService {
         commentRepository.deleteByUser_Id(id);
         likeRepository.deleteByUser_Id(id);
         postRepository.deleteByUser_Id(id);
-        imageRepository.delete(target.getProfileImage());
         userRepository.delete(target);
         return UserDto.createUserDto(target);
-    }
-
-    @Transactional
-    public UserDto updateUserProfileImage(Long userId, MultipartFile file) throws IOException {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 프로필 업데이트 실패, 대상 사용자가 없습니다."));
-
-        // 새 이미지 저장
-        Image newImage = imageService.saveImage(file);
-
-        // 기존 이미지 삭제
-        if (user.getProfileImage() != null) {
-            imageService.deleteImage(user.getProfileImage().getId());
-        }
-
-        // 새로운 이미지 설정
-        user.setProfileImage(newImage);
-        User updatedUser = userRepository.save(user);
-
-        return UserDto.createUserDto(updatedUser);
     }
 
     public UserDto authenticateUser(String email, String password) {
@@ -106,5 +94,52 @@ public class UserService {
             return UserDto.createUserDto(user);
         }
         return null; // 인증 실패 시 null 반환
+    }
+
+    @Transactional
+    public UserDto updateProfileImage(Long userId, String imageUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 프로필 업데이트 실패, 대상 사용자가 없습니다."));
+
+        // 기존 이미지 삭제
+        if (user.getProfileImageUrl() != null) {
+            String oldImagePath = user.getProfileImageUrl();
+            File oldFile = new File(oldImagePath);
+            if (oldFile.exists()) {
+                oldFile.delete(); // 기존 이미지 삭제
+            }
+        }
+        // 새로운 이미지 설정
+        user.setProfileImageUrl(imageUrl);
+        User updatedUser = userRepository.save(user);
+
+        return UserDto.createUserDto(updatedUser);
+    }
+
+
+
+    @Transactional
+    public String saveImageToLocalFile(MultipartFile file, Long userId) throws IOException {
+
+        File uploadFolder = new File(uploadDir);
+
+        // Create folder if it doesn't exist
+        if (!uploadFolder.exists()) {
+            uploadFolder.mkdirs();
+        }
+
+        // Generate unique filename
+        String fileName = "user_" + userId + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(uploadDir, fileName);
+        Files.write(filePath, file.getBytes());
+
+        return filePath.toString(); // Return local file path
+    }
+
+    public String getProfileImagePath(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 이미지 불러오기 실패, 대상 사용자가 없습니다."));
+
+        return user.getProfileImageUrl();
     }
 }

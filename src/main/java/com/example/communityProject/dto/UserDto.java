@@ -24,7 +24,7 @@ public class UserDto {
                 user.getEmail(),
                 null,
                 user.getNickname(),
-                null
+                user.getProfileImageUrl()
         );
     }
 }

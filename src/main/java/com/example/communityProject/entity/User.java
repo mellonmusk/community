@@ -3,8 +3,6 @@ package com.example.communityProject.entity;
 import com.example.communityProject.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
@@ -31,9 +29,7 @@ public class User {
     @Column(unique = true, length=10)
     private String nickname;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "image_id")
-    private Image profileImage; // 프로필 이미지 URL 저장
+    private String profileImageUrl; // 프로필 이미지 URL 저장
 
     // Bidirectional one-to-many mapping for comments.
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -75,6 +71,9 @@ public class User {
         }
         if (dto.getNickname() != null) {
             this.nickname = dto.getNickname();
+        }
+        if(dto.getProfileImage() != null) {
+            this.profileImageUrl = dto.getProfileImage();
         }
     }
 }

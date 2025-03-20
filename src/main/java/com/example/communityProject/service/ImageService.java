@@ -51,6 +51,7 @@ public class ImageService {
         return imageRepository.save(image);
     }
 
+
     @Transactional
     public void deleteImage(Long imageId) {
         imageRepository.deleteById(imageId);
@@ -62,10 +63,6 @@ public class ImageService {
         return imageRepository.findByPost_Id(id);
     }
 
-    // 프로필 이미지 조회 (ID로 검색)
-    public Optional<Image> getImageByUserId(Long id) {
-        return imageRepository.findByUser_Id(id);
-    }
 
 }
 

@@ -33,18 +33,6 @@ public class ImageController {
         this.postService = postService;
     }
 
-    // 프로필 이미지 업로드
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<UserDto> uploadProfileImage(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
-        try {
-            UserDto updatedUser = userService.updateUserProfileImage(userId, file);
-            return ResponseEntity.ok(updatedUser);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 
     // 게시글 이미지 업로드
     @PostMapping("/post/{postId}")
@@ -54,27 +42,6 @@ public class ImageController {
             return ResponseEntity.ok(updatedPost);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    // 프로필 이미지 조회
-    @GetMapping("/user/{id}")
-    public ResponseEntity<byte[]> getProfileImage(@PathVariable Long id) {
-        Optional<Image> imageOptional = imageService.getImageByUserId(id);
-
-        if (imageOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Image image = imageOptional.get();
-        File file = new File("src/main/resources/static" + image.getFilePath());
-
-        try {
-            byte[] imageData = Files.readAllBytes(file.toPath());
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_JPEG);
-            return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
