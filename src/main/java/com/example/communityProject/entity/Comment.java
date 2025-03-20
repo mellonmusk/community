@@ -19,6 +19,7 @@ public class Comment {
     private Long id;
 
     @ManyToOne // Comment entity와 Post entity를 다대일 관계로 설정
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "post_id", nullable = false) // Post entity의 기본 키(id)와 매핑
     private Post post; // 해당 댓글의 부모 게시글
 

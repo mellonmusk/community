@@ -26,6 +26,7 @@ public class Post {
     private String content;
 
     @OneToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "image_id")
     private Image postImage; // 파일 디렉토리
 

@@ -22,7 +22,7 @@ public class UserDto {
         return new UserDto(
                 user.getId(),
                 user.getEmail(),
-                user.getPassword(),
+                null,
                 user.getNickname(),
                 null
         );

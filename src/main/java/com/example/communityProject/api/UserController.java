@@ -48,4 +48,10 @@ public class UserController {
         UserDto deletedDto = userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @PostMapping("/api/users/login")
+    public ResponseEntity<UserDto> loginUser(@RequestBody UserDto userDto) {
+        UserDto authenticatedUser = userService.authenticateUser(userDto.getEmail(), userDto.getPassword());
+        return ResponseEntity.status(HttpStatus.OK).body(authenticatedUser);
+    }
 }

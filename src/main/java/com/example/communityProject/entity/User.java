@@ -3,6 +3,9 @@ package com.example.communityProject.entity;
 import com.example.communityProject.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,10 +29,11 @@ public class User {
     private String nickname;
 
     @OneToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "image_id")
     private Image profileImage; // 프로필 이미지 URL 저장
 
-    public static User createUser(UserDto dto) {
+    public static User createUser(UserDto dto, PasswordEncoder passwordEncoder) {
         // 예외 발생
         if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
             throw new IllegalArgumentException("사용자 생성 실패, 사용자의 id가 없어야 합니다.");
@@ -38,7 +42,7 @@ public class User {
         return new User(
                 null,
                 dto.getEmail(),
-                dto.getPassword(),
+                passwordEncoder.encode(dto.getPassword()),
                 dto.getNickname(),
                 null // 프로필 이미지는 별도로 저장
         );
@@ -51,9 +55,6 @@ public class User {
         // 객체 갱신
         if (dto.getEmail() != null) {
             this.email = dto.getEmail();
-        }
-        if (dto.getPassword() != null) {
-            this.password = dto.getPassword();
         }
         if (dto.getNickname() != null) {
             this.nickname = dto.getNickname();
