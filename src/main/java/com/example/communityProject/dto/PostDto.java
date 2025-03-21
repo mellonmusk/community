@@ -18,7 +18,7 @@ public class PostDto {
     private String title;
     private String content;
     private String image;
-//    private Long likes;    // 좋아요 수
+    private Long likes;    // 좋아요 수
     private Long authorId;
     private Long views;
     private LocalDateTime createdAt;
@@ -29,8 +29,7 @@ public class PostDto {
                 post.getTitle(),
                 post.getContent(),
                 null,
-//                post.getPostImage().getFilePath(),
-//                post.getLikes(),
+                post.getLikes(),
                 post.getUser().getId(),
                 post.getViews(),
                 post.getCreatedAt()

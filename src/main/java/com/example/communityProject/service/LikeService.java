@@ -26,9 +26,6 @@ public class LikeService {
         return likeCount;
     }
 
-//    public List<LikeDto> getLikes(Long postId) {
-//    }
-
     @Transactional
     public LikeDto createLike(Long postId, LikeDto dto) {
         Post post = postRepository.findById(postId)
@@ -40,6 +37,7 @@ public class LikeService {
         }
         Like like = Like.createLike(dto, user, post);
         Like created = likeRepository.save(like);
+        postRepository.incrementLikes(postId);
         return LikeDto.createLikeDto(created);
     }
 
@@ -53,6 +51,7 @@ public class LikeService {
         Like target = likeRepository.findByUser_IdAndPost_Id(userId, postId)
                         .orElseThrow(()->new RuntimeException("좋아요 삭제 실패, 주어진 사용자와 게시글에 해당하는 좋아요가 없습니다."));
         likeRepository.delete(target);
+        postRepository.decrementLikes(postId);
         return LikeDto.createLikeDto(target);
     }
 }

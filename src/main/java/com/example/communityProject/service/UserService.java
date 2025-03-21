@@ -1,7 +1,6 @@
 package com.example.communityProject.service;
 
 import com.example.communityProject.dto.UserDto;
-import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -88,6 +86,7 @@ public class UserService {
     }
 
     public UserDto authenticateUser(String email, String password) {
+        log.info("AUthentication started!");
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {

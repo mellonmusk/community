@@ -10,6 +10,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Override
     ArrayList<User> findAll();
 
+    Optional<User> findById(Long id);
+
     Optional<User> findByEmail(String email);
-    Optional<User> findUserById(Long id);
 }

@@ -2,28 +2,35 @@ package com.example.communityProject.api;
 
 import com.example.communityProject.dto.UserDto;
 import com.example.communityProject.entity.Image;
+import com.example.communityProject.security.JwtUtil;
 import com.example.communityProject.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @RestController
 public class UserController {
-    @Autowired
     private UserService userService;
+    private final JwtUtil jwtUtil;
+
+    public UserController(UserService userService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+    }
+
 
     // 사용자 프로필 목록 조회
     @GetMapping("/api/users")
@@ -39,7 +46,21 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
 
-    // 사용자 프로필 등록
+    @PostMapping("/api/users/login")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody UserDto userDto) {
+        UserDto authenticatedUser = userService.authenticateUser(userDto.getEmail(), userDto.getPassword());
+        // JWT 토큰 생성
+        String accessToken = jwtUtil.generateToken(authenticatedUser.getId());
+        // 응답 객체 생성 (토큰 + 유저 정보 포함)
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("user", authenticatedUser);
+        responseBody.put("accessToken", accessToken);
+
+        return ResponseEntity.ok(responseBody);
+    }
+
+
+    // 사용자 프로필 등록(회원가입)
     @PostMapping("/api/users")
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto dto) {
         UserDto createdDto = userService.createUser(dto);
@@ -58,12 +79,6 @@ public class UserController {
     public ResponseEntity<UserDto> deleteUser(@PathVariable Long id){
         UserDto deletedDto = userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @PostMapping("/api/users/login")
-    public ResponseEntity<UserDto> loginUser(@RequestBody UserDto userDto) {
-        UserDto authenticatedUser = userService.authenticateUser(userDto.getEmail(), userDto.getPassword());
-        return ResponseEntity.status(HttpStatus.OK).body(authenticatedUser);
     }
 
 

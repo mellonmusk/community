@@ -34,8 +34,7 @@ public class Post {
     @JoinColumn(name = "author_id", nullable = false)
     private User user;
 
-//    @Column
-//    private Like likes;
+    private Long likes;
 
     @Column
     private Long views=0L;
@@ -54,7 +53,7 @@ public class Post {
                 dto.getContent(),
                 null,
                 user,
-//                dto.getLikes(),
+                dto.getLikes(),
                 dto.getViews(),
                 now
         );
@@ -71,9 +70,9 @@ public class Post {
         if (dto.getContent() != null) {
             this.content = dto.getContent();
         }
-//        if (dto.getLikes() != null) {
-//            this.likes = dto.getLikes();
-//        }
+        if (dto.getLikes() != null) {
+            this.likes = dto.getLikes();
+        }
         if (dto.getViews() != null) {
             this.views = dto.getViews();
         }

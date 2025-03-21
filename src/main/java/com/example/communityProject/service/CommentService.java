@@ -7,6 +7,7 @@ import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.CommentRepository;
 import com.example.communityProject.repository.PostRepository;
 import com.example.communityProject.repository.UserRepository;
+import com.example.communityProject.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ public class CommentService {
     private PostRepository postRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public List<CommentDto> getComments(Long postId) {
         return commentRepository.findByPostId(postId)
@@ -51,10 +54,16 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto updateComment(Long commentId, CommentDto dto) {
+    public CommentDto updateComment(Long commentId, CommentDto dto, String token) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
         // db에서 댓글 조회 및 예외 발생
         Comment target = commentRepository.findById(commentId)
                 .orElseThrow(()-> new IllegalArgumentException("댓글 수정 실패, 대상 댓글이 없습니다."));
+        // 현재 로그인한 사용자가 작성자인지 확인
+        log.info("댓글 작성자: "+target.getUser().getId()+"로그인한 사용자: "+userId);
+        if (!target.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
         // 댓글 수정
         target.patch(dto);
         // db 갱신
@@ -64,10 +73,16 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto deleteComment(Long commentId) {
+    public CommentDto deleteComment(Long commentId, String token) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
         // 댓글 조회 및 예외 발생
         Comment target = commentRepository.findById(commentId)
                 .orElseThrow(()->new IllegalArgumentException("댓글 삭제 실패, 대상 댓글이 없습니다."));
+        // 작성자와 현재 로그인한 사용자 비교
+        if (!target.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
         // 댓글 삭제
         commentRepository.delete(target);
         // 삭제 댓글을 dto로 변환해 반환

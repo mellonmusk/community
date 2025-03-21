@@ -10,7 +10,6 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @Entity
 @Table(name = "MEMBER")
 @Getter
@@ -76,4 +75,13 @@ public class User {
             this.profileImageUrl = dto.getProfileImage();
         }
     }
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
+
 }

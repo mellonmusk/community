@@ -42,3 +42,4 @@ out/
 
 SecurityConfig.java
 src/main/resources/static/uploads/
+data.sql
