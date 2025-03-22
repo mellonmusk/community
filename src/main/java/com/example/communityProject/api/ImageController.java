@@ -56,7 +56,7 @@ public class ImageController {
         }
 
         Image image = imageOptional.get();
-        File file = new File("src/main/resources/static" + image.getFilePath());
+        File file = new File(image.getFilePath());
 
         try {
             byte[] imageData = Files.readAllBytes(file.toPath());

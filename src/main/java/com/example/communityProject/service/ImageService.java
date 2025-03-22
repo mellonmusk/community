@@ -47,7 +47,7 @@ public class ImageService {
         Files.write(filePath, file.getBytes());
 
         // DB에 파일 정보 저장
-        Image image = new Image(fileName, "/uploads/" + fileName);
+        Image image = new Image(fileName, filePath.toString());
         return imageRepository.save(image);
     }
 

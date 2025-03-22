@@ -69,22 +69,34 @@ public class UserController {
 
     // 사용자 프로필 수정
     @PatchMapping("/api/users/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto dto) {
-        UserDto updatedDto = userService.updateUser(id, dto);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedDto);
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto dto, @RequestHeader("Authorization") String token) {
+        try {
+            UserDto updatedDto = userService.updateUser(id, dto, token);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);  // 권한 없음 (403)
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // 게시글 없음 (404)
+        }
     }
 
     // 사용자 삭제
     @DeleteMapping("/api/users/{id}")
-    public ResponseEntity<UserDto> deleteUser(@PathVariable Long id){
-        UserDto deletedDto = userService.deleteUser(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<UserDto> deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        try {
+            UserDto deletedDto = userService.deleteUser(id, token);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);  // 권한 없음 (403)
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // 게시글 없음 (404)
+        }
     }
 
 
     // 프로필 이미지 업로드
     @PostMapping("/api/images/user/{userId}")
-    public ResponseEntity<UserDto> uploadProfileImage(@PathVariable Long userId, @RequestParam("file") MultipartFile file)throws IOException {
+    public ResponseEntity<UserDto> uploadProfileImage(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
         try {
             String imageUrl = userService.saveImageToLocalFile(file, userId);
             log.info(imageUrl);

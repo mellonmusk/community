@@ -14,7 +14,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     ArrayList<Post> findAll();
 
     // 특정 닉네임의 모든 게시글 조회
-    @Query(value = "SELECT * FROM post WHERE author_id = :userId", nativeQuery = true)
+    @Query(value = "SELECT * FROM Post WHERE author_id = :userId", nativeQuery = true)
     List<Post> findByUserId(Long userId);
 
     void deleteByUser_Id(Long id);
@@ -26,4 +26,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query("UPDATE Post p SET p.likes = p.likes - 1 WHERE p.id = :postId")
     void decrementLikes(@Param("postId") Long postId);
+
+    @Query("SELECT p.id FROM Post p WHERE p.user.id = :userId")
+    List<Long> findIdsByUser_Id(@Param("userId") Long userId);
+
 }

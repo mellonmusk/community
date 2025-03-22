@@ -1,8 +1,11 @@
 package com.example.communityProject.service;
 
 import com.example.communityProject.dto.UserDto;
+import com.example.communityProject.entity.Like;
 import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
+import com.example.communityProject.security.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +40,8 @@ public class UserService {
     private ImageService imageService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Value("${file.upload-dir}") // application.properties에서 설정한 경로
     private String uploadDir;
@@ -47,24 +52,29 @@ public class UserService {
                 .map(user -> UserDto.createUserDto(user))
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public UserDto getUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("사용자 조회 실패, 대상 사용자가 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("사용자 조회 실패, 대상 사용자가 없습니다."));
         return UserDto.createUserDto(user);
     }
 
     @Transactional
     public UserDto createUser(UserDto dto) {
         User user = User.createUser(dto, passwordEncoder);
-        User created= userRepository.save(user);
+        User created = userRepository.save(user);
         return UserDto.createUserDto(created);
     }
 
     @Transactional
-    public UserDto updateUser(Long id, UserDto dto) {
+    public UserDto updateUser(Long id, UserDto dto, String token) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
         User target = userRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("사용자 수정 실패, 대상 사용자가 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("사용자 수정 실패, 대상 사용자가 없습니다."));
+        if (!target.getId().equals(userId)) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
         target.patch(dto);
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) { // 비밀번호 변경이 있을 때만 암호화 적용
             target.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -74,13 +84,28 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto deleteUser(Long id) {
+    public UserDto deleteUser(Long id, String token) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
         User target = userRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("사용자 삭제 실패, 대상 사용자가 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("사용자 삭제 실패, 대상 사용자가 없습니다."));
+        if (!target.getId().equals(userId)) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
 
-        commentRepository.deleteByUser_Id(id);
         likeRepository.deleteByUser_Id(id);
+        commentRepository.deleteByUser_Id(id);
+
+        // 사용자가 작성한 게시글 ID 조회
+        List<Long> postIds = postRepository.findIdsByUser_Id(id);
+
+        // 해당 게시글과 관련된 모든 좋아요, 댓글 삭제
+        if (!postIds.isEmpty()) {
+            likeRepository.deleteByPost_IdIn(postIds);
+            commentRepository.deleteByPost_IdIn(postIds);
+        }
+        // 게시글 삭제
         postRepository.deleteByUser_Id(id);
+
         userRepository.delete(target);
         return UserDto.createUserDto(target);
     }
@@ -116,7 +141,6 @@ public class UserService {
     }
 
 
-
     @Transactional
     public String saveImageToLocalFile(MultipartFile file, Long userId) throws IOException {
 
@@ -129,6 +153,9 @@ public class UserService {
 
         // Generate unique filename
         String fileName = "user_" + userId + "_" + file.getOriginalFilename();
+        if (fileName.length() > 50) {
+            fileName = fileName.substring(0, 50); // 최대 50자로 잘라냄
+        }
         Path filePath = Paths.get(uploadDir, fileName);
         Files.write(filePath, file.getBytes());
 
