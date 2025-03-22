@@ -1,16 +1,15 @@
 package com.example.communityProject.repository;
 
-import com.example.communityProject.entity.Comment;
 import com.example.communityProject.entity.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
     @Override
     ArrayList<Post> findAll();
 
