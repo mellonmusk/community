@@ -2,10 +2,7 @@ package com.example.communityProject.dto;
 
 import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.Post;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +10,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 @Getter
+@Setter
+@Data
 public class PostDto {
     private Long id;
     private String title;

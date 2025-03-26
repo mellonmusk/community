@@ -1,14 +1,11 @@
-package com.example.communityProject.api;
+package com.example.communityProject.controller;
 
 import com.example.communityProject.dto.PostDto;
-import com.example.communityProject.service.LikeService;
 import com.example.communityProject.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

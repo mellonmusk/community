@@ -1,16 +1,14 @@
 package com.example.communityProject.dto;
 
 import com.example.communityProject.entity.Comment;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @ToString
 public class CommentDto {
     private Long id;

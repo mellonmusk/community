@@ -1,9 +1,7 @@
-package com.example.communityProject.api;
+package com.example.communityProject.controller;
 
 import com.example.communityProject.dto.PostDto;
-import com.example.communityProject.dto.UserDto;
 import com.example.communityProject.entity.Image;
-import com.example.communityProject.entity.User;
 import com.example.communityProject.service.ImageService;
 import com.example.communityProject.service.PostService;
 import com.example.communityProject.service.UserService;
@@ -18,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/images")
@@ -49,13 +47,13 @@ public class ImageController {
     // 게시글 이미지 조회
     @GetMapping("/post/{id}")
     public ResponseEntity<byte[]> getPostImage(@PathVariable Long id) {
-        Optional<Image> imageOptional = imageService.getImageByPostId(id);
+        List<Image> imageOptional = imageService.getImageByPostId(id);
 
         if (imageOptional.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        Image image = imageOptional.get();
+        Image image = imageOptional.get(0);
         File file = new File(image.getFilePath());
 
         try {

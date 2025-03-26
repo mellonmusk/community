@@ -9,7 +9,6 @@ import com.example.communityProject.repository.PostRepository;
 import com.example.communityProject.repository.UserRepository;
 import com.example.communityProject.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +19,17 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CommentService {
-    @Autowired
     private CommentRepository commentRepository;
-    @Autowired
     private PostRepository postRepository;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private JwtUtil jwtUtil;
+
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository, UserRepository userRepository, JwtUtil jwtUtil) {
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+    }
 
     public List<CommentDto> getComments(Long postId) {
         return commentRepository.findByPostId(postId)

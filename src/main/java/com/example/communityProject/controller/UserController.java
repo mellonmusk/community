@@ -1,13 +1,10 @@
-package com.example.communityProject.api;
+package com.example.communityProject.controller;
 
 import com.example.communityProject.dto.UserDto;
-import com.example.communityProject.entity.Image;
 import com.example.communityProject.security.JwtUtil;
 import com.example.communityProject.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +15,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController

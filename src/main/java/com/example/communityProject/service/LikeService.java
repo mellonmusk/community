@@ -14,12 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class LikeService {
-    @Autowired
     private LikeRepository likeRepository;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private PostRepository postRepository;
+
+    public LikeService(LikeRepository likeRepository, UserRepository userRepository, PostRepository postRepository) {
+        this.likeRepository = likeRepository;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+    }
 
     public Long countByPostId(Long id) {
         Long likeCount = likeRepository.countByPostId(id);

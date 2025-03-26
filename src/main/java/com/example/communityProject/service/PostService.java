@@ -23,20 +23,24 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class PostService {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private CommentRepository commentRepository;
-    @Autowired
-    private LikeRepository likeRepository;
-    @Autowired
-    private ImageRepository imageRepository;
-    @Autowired
-    private ImageService imageService;
-    @Autowired
-    private JwtUtil jwtUtil;
+
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
+    private final ImageRepository imageRepository;
+    private final ImageService imageService;
+    private final JwtUtil jwtUtil;
+
+    public PostService(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, LikeRepository likeRepository, ImageRepository imageRepository, ImageService imageService, JwtUtil jwtUtil) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.likeRepository = likeRepository;
+        this.imageRepository = imageRepository;
+        this.imageService = imageService;
+        this.jwtUtil = jwtUtil;
+    }
 
     public List<PostDto> getPostList() {
         return postRepository.findAll()
@@ -54,7 +58,7 @@ public class PostService {
     @Transactional
     public PostDto createPost(PostDto dto) {
         User user = userRepository.findById(dto.getAuthorId())
-                .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패, 작성자 ID가 유효하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("게시글 생성 실패, 작성자 ID가 유효하지 않습니다."));
         Post post = Post.createPost(dto, user, LocalDateTime.now());
         Post created = postRepository.save(post);
         return PostDto.createPostDto(created);

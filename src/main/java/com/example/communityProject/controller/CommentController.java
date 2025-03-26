@@ -1,4 +1,4 @@
-package com.example.communityProject.api;
+package com.example.communityProject.controller;
 
 import com.example.communityProject.dto.CommentDto;
 import com.example.communityProject.service.CommentService;

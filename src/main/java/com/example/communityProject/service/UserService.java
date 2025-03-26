@@ -26,25 +26,24 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserService {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private CommentRepository commentRepository;
-    @Autowired
-    private LikeRepository likeRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ImageRepository imageRepository;
-    @Autowired
-    private ImageService imageService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    public UserService(PostRepository postRepository, CommentRepository commentRepository, LikeRepository likeRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.likeRepository = likeRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+    }
 
     @Value("${file.upload-dir}") // application.properties에서 설정한 경로
-    private String uploadDir;
+    String uploadDir;
 
     public List<UserDto> getUserList() {
         return userRepository.findAll()
@@ -111,7 +110,6 @@ public class UserService {
     }
 
     public UserDto authenticateUser(String email, String password) {
-        log.info("AUthentication started!");
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {

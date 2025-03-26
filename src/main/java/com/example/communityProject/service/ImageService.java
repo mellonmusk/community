@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,7 +23,7 @@ public class ImageService {
     private final ImageRepository imageRepository;
 
     @Value("${file.upload-dir}") // application.properties에서 설정한 경로
-    private String uploadDir;
+    String uploadDir;
 
     public ImageService(ImageRepository imageRepository) {
         this.imageRepository = imageRepository;
@@ -59,7 +60,7 @@ public class ImageService {
 
 
     // 게시글 이미지 조회 (ID로 검색)
-    public Optional<Image> getImageByPostId(Long id) {
+    public List<Image> getImageByPostId(Long id) {
         return imageRepository.findByPost_Id(id);
     }
 

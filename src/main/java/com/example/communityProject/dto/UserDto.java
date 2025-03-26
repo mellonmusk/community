@@ -2,14 +2,12 @@ package com.example.communityProject.dto;
 
 import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @ToString
 public class UserDto {
     private Long id;
