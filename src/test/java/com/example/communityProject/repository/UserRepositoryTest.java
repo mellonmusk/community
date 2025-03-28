@@ -2,7 +2,6 @@ package com.example.communityProject.repository;
 
 import com.example.communityProject.entity.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +24,17 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testUser1 = new User();
-        testUser1.setEmail("test1@example.com");
-        testUser1.setPassword("User@123");
-        testUser1.setNickname("tester1");
-        userRepository.save(testUser1);
+        testUser1 = userRepository.save(User.builder()
+                        .email("test1@example.com")
+                        .password("User@123")
+                        .nickname("tester1")
+                        .build());
 
-        testUser2 = new User();
-        testUser2.setEmail("test2@example.com");
-        testUser2.setPassword("User@234");
-        testUser2.setNickname("tester2");
-        userRepository.save(testUser2);
+        testUser2 = userRepository.save(User.builder()
+                .email("test2@example.com")
+                .password("User@234")
+                .nickname("tester2")
+                .build());
     }
 
     @Test

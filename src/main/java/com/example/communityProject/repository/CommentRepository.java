@@ -19,7 +19,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     void deleteByPost_Id(Long id);
 
-    void deleteByUser_Id(Long id);
+    void deleteByUserId(Long id);
 
     // 게시글 ID 목록에 해당하는 댓글 모두 삭제
     @Modifying

@@ -15,16 +15,21 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     @Query("SELECT COUNT(l) FROM Like l WHERE l.post.id = :postId")
     Long countByPostId(Long postId);
 
-    void deleteByPost_Id(Long id);
+    void deleteByPostId(Long id);
 
-    boolean existsByUser_IdAndPost_Id(Long userId, Long postId);
+    @Query("SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END FROM Like l WHERE l.user.id = :userId AND l.post.id = :postId")
+    boolean existsByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
-    Optional<Like> findByUser_IdAndPost_Id(Long userId, Long postId);
+    Optional<Like> findByUserIdAndPostId(Long userId, Long postId);
  
-    void deleteByUser_Id(@Param("id") Long id);
+    void deleteByUserId(@Param("id") Long id);
 
     // 게시글 ID 목록에 해당하는 좋아요 모두 삭제
     @Modifying
     @Query("DELETE FROM Like l WHERE l.post.id IN :postIds")
     void deleteByPost_IdIn(@Param("postIds") List<Long> postIds);
+
+    // 사용자 ID에 대응되는 게시글 ID 목록을 가져오는 메서드 추가
+    @Query("SELECT l.post.id FROM Like l WHERE l.user.id = :userId")
+    List<Long> findPostIdsByUserId(@Param("userId") Long userId);
 }

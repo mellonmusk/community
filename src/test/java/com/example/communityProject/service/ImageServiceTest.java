@@ -69,7 +69,7 @@ class ImageServiceTest {
         Image savedImage = imageService.saveImage(file);
 
         // 파일이 올바르게 저장되었는지 확인
-        assertNotNull(savedImage); 
+        assertNotNull(savedImage);
     }
 
 
@@ -83,8 +83,9 @@ class ImageServiceTest {
     @Test
     void getImageByPostId() {
         Long postId = 1L;
-        Image image = new Image();
-        image.setFileName("testImage.jpg");
+        Image image = Image.builder()
+                .fileName("testImage.jpg")
+                .build();
         when(imageRepository.findByPost_Id(postId)).thenReturn(List.of(image));
 
         List<Image> images = imageService.getImageByPostId(postId);

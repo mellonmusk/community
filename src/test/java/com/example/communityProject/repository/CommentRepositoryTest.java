@@ -33,57 +33,57 @@ class CommentRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testUser1 = new User();
-        testUser1.setEmail("test1@example.com");
-        testUser1.setPassword("User@123");
-        testUser1.setNickname("tester1");
-        userRepository.save(testUser1);
+        testUser1 = userRepository.save(User.builder()
+                .email("test1@example.com")
+                .password("User@123")
+                .nickname("tester1")
+                .build());
 
-        testUser2 = new User();
-        testUser2.setEmail("test2@example.com");
-        testUser2.setPassword("User@456");
-        testUser2.setNickname("tester2");
-        userRepository.save(testUser2);
+        testUser2 = userRepository.save(User.builder()
+                .email("test2@example.com")
+                .password("User@456")
+                .nickname("tester2")
+                .build());
 
-        testPost1 = new Post();
-        testPost1.setTitle("Post 1");
-        testPost1.setContent("Content of Post 1");
-        testPost1.setUser(testUser1);
-        testPost1.setLikes(0L);
-        postRepository.save(testPost1);
 
-        testPost2 = new Post();
-        testPost2.setTitle("Post 2");
-        testPost2.setContent("Content of Post 2");
-        testPost2.setUser(testUser2);
-        testPost2.setLikes(0L);
-        postRepository.save(testPost2);
+        testPost1 = postRepository.save(Post.builder()
+                .title("Post 1")
+                .content("Content of Post 1")
+                .user(testUser1)
+                .likes(0L)
+                .build());
 
-        testPost3 = new Post();
-        testPost3.setTitle("Post 3");
-        testPost3.setContent("Content of Post 3");
-        testPost3.setUser(testUser2);
-        testPost3.setLikes(0L);
-        postRepository.save(testPost3);
+        testPost2 = postRepository.save(Post.builder()
+                .title("Post 2")
+                .content("Content of Post 2")
+                .user(testUser2)
+                .likes(0L)
+                .build());
 
-        testComment1 = new Comment();
-        testComment1.setBody("Body of Comment 1");
-        testComment1.setPost(testPost1);
-        testComment1.setUser(testUser2);
-        commentRepository.save(testComment1);
+        testPost3 = postRepository.save(Post.builder()
+                .title("Post 3")
+                .content("Content of Post 3")
+                .user(testUser2)
+                .likes(0L)
+                .build());
 
-        testComment2 = new Comment();
-        testComment2.setBody("Body of Comment 2");
-        testComment2.setPost(testPost2);
-        testComment2.setUser(testUser1);
-        commentRepository.save(testComment2);
+        testComment1 = commentRepository.save(Comment.builder()
+                .body("Body of Comment 1")
+                .post(testPost1)
+                .user(testUser2)
+                .build());
 
-        testComment3 = new Comment();
-        testComment3.setBody("Body of Comment 3");
-        testComment3.setPost(testPost3);
-        testComment3.setUser(testUser1);
-        commentRepository.save(testComment3);
+        testComment2 = commentRepository.save(Comment.builder()
+                .body("Body of Comment 2")
+                .post(testPost2)
+                .user(testUser1)
+                .build());
 
+        testComment3 = commentRepository.save(Comment.builder()
+                .body("Body of Comment 3")
+                .post(testPost3)
+                .user(testUser1)
+                .build());
     }
 
     @Test
@@ -111,7 +111,7 @@ class CommentRepositoryTest {
     @Test
     @DisplayName("사용자 ID로 댓글 삭제하기")
     void deleteByUser_Id() {
-        commentRepository.deleteByUser_Id(testUser1.getId());
+        commentRepository.deleteByUserId(testUser1.getId());
         List<Comment> comments = commentRepository.findByUserId(testUser1.getId());
         assertThat(comments).isEmpty();
     }

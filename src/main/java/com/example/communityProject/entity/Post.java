@@ -3,8 +3,6 @@ package com.example.communityProject.entity;
 import com.example.communityProject.dto.PostDto;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,7 +13,7 @@ import java.util.List;
 @ToString
 @Entity
 @Getter
-@Setter
+@Builder(toBuilder = true)
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +25,7 @@ public class Post {
     @Lob
     private String content;
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
@@ -37,27 +36,11 @@ public class Post {
     private Long likes;
 
     @Column
+    @Builder.Default
     private Long views=0L;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
-    public static Post createPost(PostDto dto, User user, LocalDateTime now) {
-        if (dto.getId() != null){
-            throw new IllegalArgumentException("게시글 생성 실패, 게시글의 id가 없어야 합니다.");
-        }
-        // 엔티티 생성 및 반환
-        return new Post(
-                null,
-                dto.getTitle(),
-                dto.getContent(),
-                null,
-                user,
-                dto.getLikes(),
-                dto.getViews(),
-                now
-        );
-    }
 
     public void patch(PostDto dto) {
         // 예외 발생

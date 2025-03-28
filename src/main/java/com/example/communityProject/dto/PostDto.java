@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 @Getter
-@Setter
+@Builder(toBuilder = true)
 @Data
 public class PostDto {
     private Long id;

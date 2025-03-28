@@ -10,9 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
-import java.util.Optional;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 class ImageRepositoryTest {
@@ -31,27 +30,31 @@ class ImageRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testUser1 = new User();
-        testUser1.setEmail("test1@example.com");
-        testUser1.setPassword("User@123");
-        testUser1.setNickname("tester1");
-        userRepository.save(testUser1);
+        testUser1 = userRepository.save(User.builder()
+                .email("test1@example.com")
+                .password("User@123")
+                .nickname("tester1")
+                .build());
 
-        testPost1 = new Post();
-        testPost1.setUser(testUser1);
-        postRepository.save(testPost1);  // ⭐ Post 먼저 저장
+        testPost1 = postRepository.save(Post.builder()
+                .title("Post 1")
+                .content("Content of Post 1")
+                .user(testUser1)
+                .build());
 
-        testPost2 = new Post();
-        testPost2.setUser(testUser1);
-        postRepository.save(testPost2);
+        testPost2 = postRepository.save(Post.builder()
+                .title("Post 2")
+                .content("Content of Post 2")
+                .user(testUser1)
+                .build());
 
-        testImage1 = new Image();
-        testImage1.setPost(testPost1); // ⭐ Post에 연결
-        imageRepository.save(testImage1);
+        testImage1 = imageRepository.save(Image.builder()
+                .post(testPost1)
+                .build());
 
-        testImage2 = new Image();
-        testImage2.setPost(testPost2);
-        imageRepository.save(testImage2);
+        testImage2 = imageRepository.save(Image.builder()
+                .post(testPost2)
+                .build());
     }
 
     @Test

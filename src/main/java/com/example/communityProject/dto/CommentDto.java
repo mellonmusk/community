@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder(toBuilder = true)
 @Getter
-@Setter
 @ToString
 public class CommentDto {
     private Long id;

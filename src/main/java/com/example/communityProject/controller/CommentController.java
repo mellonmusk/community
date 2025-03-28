@@ -3,7 +3,6 @@ package com.example.communityProject.controller;
 import com.example.communityProject.dto.CommentDto;
 import com.example.communityProject.service.CommentService;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,11 @@ import java.util.List;
 
 @RestController
 public class CommentController {
-    @Autowired
     private CommentService commentService;
+
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
+    }
 
     // 댓글 조회
     @GetMapping("/api/posts/{postId}/comments")

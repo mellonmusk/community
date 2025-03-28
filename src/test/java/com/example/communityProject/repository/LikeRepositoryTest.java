@@ -1,6 +1,5 @@
 package com.example.communityProject.repository;
 
-import com.example.communityProject.entity.Comment;
 import com.example.communityProject.entity.Like;
 import com.example.communityProject.entity.Post;
 import com.example.communityProject.entity.User;
@@ -34,31 +33,30 @@ class LikeRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        testUser1 = new User();
-        testUser1.setEmail("test1@example.com");
-        testUser1.setPassword("User@123");
-        testUser1.setNickname("tester1");
-        userRepository.save(testUser1);
+        testUser1 = userRepository.save(User.builder()
+                .email("test1@example.com")
+                .password("User@123")
+                .nickname("tester1")
+                .build());
+        testUser2 = userRepository.save(User.builder()
+                .email("test2@example.com")
+                .password("User@456")
+                .nickname("tester2")
+                .build());
 
-        testUser2 = new User();
-        testUser2.setEmail("test2@example.com");
-        testUser2.setPassword("User@456");
-        testUser2.setNickname("tester2");
-        userRepository.save(testUser2);
+        testPost1 = postRepository.save(Post.builder()
+                .title("Post 1")
+                .content("Content of Post 1")
+                .user(testUser1)
+                .likes(0L)
+                .build());
 
-        testPost1 = new Post();
-        testPost1.setTitle("Post 1");
-        testPost1.setContent("Content of Post 1");
-        testPost1.setUser(testUser1);
-        testPost1.setLikes(0L);
-        postRepository.save(testPost1);
-
-        testPost2 = new Post();
-        testPost2.setTitle("Post 2");
-        testPost2.setContent("Content of Post 2");
-        testPost2.setUser(testUser2);
-        testPost2.setLikes(0L);
-        postRepository.save(testPost2);
+        testPost2 = postRepository.save(Post.builder()
+                .title("Post 2")
+                .content("Content of Post 2")
+                .user(testUser2)
+                .likes(0L)
+                .build());
 
         testLike1 = new Like(null, testPost1, testUser1);
         likeRepository.save(testLike1);
@@ -78,7 +76,7 @@ class LikeRepositoryTest {
     @Test
     @DisplayName("게시글 ID로 좋아요 삭제하기")
     void deleteByPost_Id() {
-        likeRepository.deleteByPost_Id(testPost1.getId());
+        likeRepository.deleteByPostId(testPost1.getId());
         Long cnt = likeRepository.countByPostId(testPost1.getId());
         assertEquals(0, cnt);
     }
@@ -86,14 +84,14 @@ class LikeRepositoryTest {
     @Test
     @DisplayName("사용자 ID와 게시글 ID에 대응되는 좋아요가 이미 존재하는지 확인하기")
     void existsByUser_IdAndPost_Id() {
-        boolean exists = likeRepository.existsByUser_IdAndPost_Id(testUser1.getId(), testPost1.getId());
+        boolean exists = likeRepository.existsByUserIdAndPostId(testUser1.getId(), testPost1.getId());
         assertTrue(exists);
     }
 
     @Test
     @DisplayName("사용자 ID와 게시글 ID에 대응되는 좋아요 찾기")
     void findByUser_IdAndPost_Id() {
-        Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(testUser1.getId(), testPost1.getId());
+        Optional<Like> like = likeRepository.findByUserIdAndPostId(testUser1.getId(), testPost1.getId());
         assertTrue(like.isPresent());
         assertEquals(testUser1.getId(), like.get().getUser().getId());
         assertEquals(testPost1.getId(), like.get().getPost().getId());
@@ -102,8 +100,8 @@ class LikeRepositoryTest {
     @Test
     @DisplayName("사용자 ID로 좋아요 삭제하기")
     void deleteByUser_Id() {
-        likeRepository.deleteByUser_Id(testUser1.getId());
-        boolean exists = likeRepository.existsByUser_IdAndPost_Id(testUser1.getId(), testPost1.getId());
+        likeRepository.deleteByUserId(testUser1.getId());
+        boolean exists = likeRepository.existsByUserIdAndPostId(testUser1.getId(), testPost1.getId());
         assertFalse(exists);
     }
 

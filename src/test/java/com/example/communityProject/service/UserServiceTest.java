@@ -57,14 +57,16 @@ class UserServiceTest {
     void setUp() {
         userService = new UserService(postRepository, commentRepository, likeRepository, userRepository, passwordEncoder, jwtUtil);
 
-        user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("encodedPassword");
-        user.setId(1L);
+        user = User.builder()
+                .email("test@example.com")
+                .password("encodedPassword")
+                .id(1L)
+                .build();
 
-        userDto = new UserDto();
-        userDto.setEmail("test@example.com");
-        userDto.setPassword("rawPassword");
+        userDto = UserDto.builder()
+                .email("test@example.com")
+                .password("rawPassword")
+                .build();
     }
 
     @Test
@@ -115,16 +117,19 @@ class UserServiceTest {
         when(jwtUtil.getUserIdFromToken(any())).thenReturn(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        UserDto modifiedDto = new UserDto();
-        modifiedDto.setId(1L);
-        modifiedDto.setEmail("test@example.com");
-        modifiedDto.setPassword("modifiedrawpassword");
+        UserDto modifiedDto = UserDto.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("modifiedrawpassword")
+                .build();
+
         when(passwordEncoder.encode(any())).thenReturn("newlyencodedPassword");
 
-        User modifiedUser = new User();
-        modifiedUser.setId(1L);
-        modifiedUser.setEmail(modifiedDto.getEmail());
-        modifiedUser.setPassword("newlyencodedPassword");
+        User modifiedUser = User.builder()
+                .email(modifiedDto.getEmail())
+                .password("newlyencodedPassword")
+                .id(1L)
+                .build();
 
         when(userRepository.save(any())).thenReturn(modifiedUser);
         UserDto updatedUser = userService.updateUser(1L, modifiedDto, "token");
@@ -137,10 +142,11 @@ class UserServiceTest {
         when(jwtUtil.getUserIdFromToken(any())).thenReturn(2L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        UserDto modifiedDto = new UserDto();
-        modifiedDto.setId(1L);
-        modifiedDto.setEmail("test@example.com");
-        modifiedDto.setPassword("modifiedrawpassword");
+        UserDto modifiedDto = UserDto.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("modifiedrawpassword")
+                .build();
 
         assertThrows(IllegalArgumentException.class, () -> userService.updateUser(1L, modifiedDto,"token"));
     }
@@ -169,8 +175,9 @@ class UserServiceTest {
     @DisplayName("프로필 이미지를 업데이트하면 변경된 URL을 반환한다")
     void updateProfileImage() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        User updatedUser = new User();
-        updatedUser.setProfileImageUrl("newImageUrl");
+        User updatedUser = User.builder()
+                .profileImageUrl("newImageUrl")
+                .build();
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
         UserDto updatedDto = userService.updateProfileImage(1L, "newImageUrl");
@@ -220,7 +227,9 @@ class UserServiceTest {
     @Test
     @DisplayName("사용자 ID로 프로필 이미지 경로를 가져올 수 있다")
     void getProfileImagePath() {
-        user.setProfileImageUrl("profileImagePath");
+        user = User.builder()
+                .profileImageUrl("profileImagePath")
+                .build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         String imagePath = userService.getProfileImagePath(1L);

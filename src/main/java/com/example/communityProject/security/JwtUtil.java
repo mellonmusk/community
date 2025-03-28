@@ -1,7 +1,6 @@
 package com.example.communityProject.security;
 
 import io.jsonwebtoken.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
-@Slf4j
 @Component
 public class JwtUtil {
 
@@ -69,9 +67,7 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
-        log.info("TOKEN: " + token);
         Long userId = extractUserId(token); // claims에서 userId 추출
-        log.info("현재 로그인 사용자 ID: " + userId);
         return userId;
     }
 }

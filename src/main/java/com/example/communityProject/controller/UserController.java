@@ -4,7 +4,6 @@ import com.example.communityProject.dto.UserDto;
 import com.example.communityProject.security.JwtUtil;
 import com.example.communityProject.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @RestController
 public class UserController {
     private UserService userService;
@@ -95,8 +93,7 @@ public class UserController {
     public ResponseEntity<UserDto> uploadProfileImage(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
         try {
             String imageUrl = userService.saveImageToLocalFile(file, userId);
-            log.info(imageUrl);
-            UserDto updatedUser = userService.updateProfileImage(userId, imageUrl);
+            UserDto updatedUser = userService. updateProfileImage(userId, imageUrl);
             return ResponseEntity.ok(updatedUser);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

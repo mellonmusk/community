@@ -3,7 +3,6 @@ package com.example.communityProject.controller;
 import com.example.communityProject.dto.PostDto;
 import com.example.communityProject.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,11 @@ import java.util.List;
 
 @RestController
 public class PostController {
-    @Autowired
     private PostService postService;
+
+    public PostController(PostService postService) {
+        this.postService = postService;
+    }
 
     // 게시글 목록 조회
     @GetMapping("/api/posts")

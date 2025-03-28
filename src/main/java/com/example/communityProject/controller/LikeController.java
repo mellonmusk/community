@@ -2,22 +2,18 @@ package com.example.communityProject.controller;
 
 import com.example.communityProject.dto.LikeDto;
 import com.example.communityProject.service.LikeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class LikeController {
-    @Autowired
     private LikeService likeService;
 
-    // 게시글의 좋아요 개수 조회
-    @GetMapping("/api/posts/{postId}/likes")
-    public ResponseEntity<Long> getLikes(@PathVariable Long postId){
-        Long dtos = likeService.countByPostId(postId);
-        return ResponseEntity.status(HttpStatus.OK).body(dtos);
+    public LikeController(LikeService likeService) {
+        this.likeService = likeService;
     }
+
     // 좋아요 생성
     @PostMapping("/api/posts/{postId}/likes")
     public ResponseEntity<LikeDto> createLike(@PathVariable Long postId,

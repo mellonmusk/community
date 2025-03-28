@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,20 +50,24 @@ class CommentServiceTest {
     void setUp() {
         commentService = new CommentService(commentRepository, postRepository, userRepository, jwtUtil);
 
-        user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
+        user = User.builder()
+                .email("test@example.com")
+                .id(1L)
+                .build();
 
-        post = new Post();
-        post.setUser(user);
+        post = Post.builder()
+                .user(user)
+                .build();
 
-        comment = new Comment();
-        comment.setUser(user);
-        comment.setPost(post);
-        comment.setBody("Test Comment");
+        comment = Comment.builder()
+                .user(user)
+                .post(post)
+                .body("Test Comment")
+                .build();
 
-        commentDto = new CommentDto();
-        commentDto.setAuthorId(user.getId());
+        commentDto = CommentDto.builder()
+                .authorId(user.getId())
+                .build();
     }
 
     @Test
@@ -94,11 +99,15 @@ class CommentServiceTest {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
-        CommentDto updatedDto = new CommentDto();
-        updatedDto.setAuthorId(user.getId());
+        CommentDto updatedDto = CommentDto.builder()
+                .authorId(user.getId())
+                .body("Updated Comment")
+                .createdAt(LocalDateTime.now())
+                .build();
+
         CommentDto updatedCommentDto = commentService.updateComment(1L, updatedDto, token);
         assertNotNull(updatedCommentDto);
-        assertEquals(comment.getBody(), updatedCommentDto.getBody());
+        assertEquals(updatedDto.getBody(), updatedCommentDto.getBody());
     }
 
     @Test
@@ -131,75 +140,4 @@ class CommentServiceTest {
         assertNotNull(deletedCommentDto);
         assertEquals(comment.getBody(), deletedCommentDto.getBody());
     }
-
-
-
-    //    @Mock
-//    private CommentRepository commentRepository;
-//
-//    @InjectMocks
-//    private CommentService commentService;
-//
-//    @Test
-//    void getComments() {
-//        // Arrange
-//        Comment comment1 = new Comment(1L, );
-//        comment1.setId(1L);
-//        comment1.setBody("I agree");
-//        comment1.setUser(new User());
-//        comment1.setPost(new Post());
-//        comment1.setCreatedAt(LocalDateTime.parse("2025-01-01T00:00:00"));
-//
-//        given(commentRepository.findById(comment1.getId())).willReturn(Optional.of(comment1));
-//
-//        // Act
-//        Optional<Comment> foundComment = commentRepository.findById(comment1.getId());
-//
-//        // Assert
-//        assertTrue(foundComment.isPresent());
-//        assertEquals("I agree", foundComment.get().getBody());
-//        verify(commentRepository).findById(comment1.getId());
-//    }
-//
-//
-//    @Test
-//    void updateComment() {
-//        // Arrange
-//        Comment comment = new Comment();
-//        comment.setId(3L);
-//        comment.setBody("Old Comment");
-//        comment.setUser(new User());
-//        comment.setPost(new Post());
-//
-//        given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
-//        given(commentRepository.save(any(Comment.class))).willReturn(comment);
-//
-//        // Act
-//        comment.setBody("Updated Comment");
-//        Comment updatedComment = commentRepository.save(comment);
-//
-//        // Assert
-//        assertEquals("Updated Comment", updatedComment.getBody());
-//        verify(commentRepository).save(any(Comment.class));
-//    }
-//
-//    @Test
-//    void deleteComment() {
-//        // Arrange
-//        Comment comment = new Comment();
-//        comment.setId(4L);
-//        comment.setBody("Will be deleted");
-//        comment.setUser(new User());
-//        comment.setPost(new Post());
-//
-//        given(commentRepository.findById(comment.getId())).willReturn(Optional.of(comment));
-//        doNothing().when(commentRepository).delete(comment);
-//
-//        // Act
-//        commentRepository.delete(comment);
-//
-//        // Assert
-//        verify(commentRepository).delete(comment);
-//    }
-
 }

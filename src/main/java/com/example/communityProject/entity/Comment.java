@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,27 +32,6 @@ public class Comment {
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
-    public static Comment createComment(CommentDto dto, Post post, User user, LocalDateTime createdAt) {
-        // 예외 발생
-        if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
-            throw new IllegalArgumentException("댓글 생성 실패, 댓글의 id가 없어야 합니다.");
-        }
-        if (dto.getPostId() != post.getId()) { // json 데이터와 url요청 정보가 다르면 안됨.(dto에서 가져온 부모 게시글과 entity에서 가져온 부모 게시글의 id가 다르면 안됨.)
-            throw new IllegalArgumentException("댓글 생성 실패, 게시글의 id가 잘못됐습니다.");
-        }
-        if (dto.getAuthorId() != user.getId()) {
-            throw new IllegalArgumentException("댓글 생성 실패, 작성자의 id가 잘못됐습니다.");
-        }
-        // 엔티티 생성 및 반환
-        return new Comment(
-                dto.getId(),
-                post,
-                user,
-                dto.getBody(),
-                createdAt
-        );
-    }
 
     public void patch(CommentDto dto) {
         // 예외 발생

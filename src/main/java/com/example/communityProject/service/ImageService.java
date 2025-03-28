@@ -60,6 +60,7 @@ public class ImageService {
 
 
     // 게시글 이미지 조회 (ID로 검색)
+    @Transactional(readOnly = true)
     public List<Image> getImageByPostId(Long id) {
         return imageRepository.findByPost_Id(id);
     }

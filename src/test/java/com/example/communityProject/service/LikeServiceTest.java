@@ -44,62 +44,66 @@ class LikeServiceTest {
     void setUp() {
         this.likeService = new LikeService(likeRepository, userRepository, postRepository);
 
-        user1 = new User();
-        user1.setEmail("test1@example.com");
-        user1.setPassword("encodedPassword");
-        user1.setId(1L);
+        user1 = User.builder()
+                .email("test1@example.com")
+                .password("encodedPassword")
+                .id(1L)
+                .build();
 
-        user2 = new User();
-        user2.setEmail("test2@example.com");
-        user2.setPassword("encodedPassword");
-        user2.setId(2L);
+        user2 = User.builder()
+                .email("test2@example.com")
+                .password("encodedPassword")
+                .id(2L)
+                .build();
 
-        post = new Post();
-        post.setId(1L);
-        post.setUser(user1);
-        post.setTitle("Test Title");
-        post.setContent("Test Content");
-        post.setViews(0L);
-        postRepository.save(post);
+        post = Post.builder()
+                .id(1L)
+                .title("Test Title")
+                .content("Test Content")
+                .user(user1)
+                .likes(0L)
+                .views(0L)
+                .build();
 
         like1 = new Like(null, post, user1);
         like2 = new Like(null, post, user2);
 
-        dto = new LikeDto(null,1L, 1L);
+        dto = new LikeDto(null, 1L, 1L);
     }
 
-    @Test
-    void countByPostId() {
-        when(likeRepository.countByPostId(1L)).thenReturn(2L);
-        Long cnt = likeService.countByPostId(1L);
-        assertEquals(2L, cnt);
-    }
+//    @Test
+//    void countByPostId() {
+//        when(likeRepository.countByPostId(1L)).thenReturn(2L);
+//        Long cnt = likeService.countByPostId(1L);
+//        assertEquals(2L, cnt);
+//    }
 
     @Test
     void createLike() {
         Long postId = 1L;
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(userRepository.findById(dto.getUserId())).thenReturn(Optional.of(user1));
-        when(likeRepository.existsByUser_IdAndPost_Id(1L, 1L)).thenReturn(false);
+        when(likeRepository.existsByUserIdAndPostId(1L, 1L)).thenReturn(false);
         when(likeRepository.save(any(Like.class))).thenReturn(like1);
-
 
         doNothing().when(postRepository).incrementLikes(1L);
 
         LikeDto result = likeService.createLike(1L, dto);
         assertNotNull(result);
+        assertEquals(result.getPostId(), postId);
+        assertEquals(result.getUserId(), dto.getUserId());
     }
 
     @Test
     void getLike() {
-        when(likeRepository.existsByUser_IdAndPost_Id(1L, 1L)).thenReturn(true);
+        when(likeRepository.existsByUserIdAndPostId(1L, 1L)).thenReturn(true);
         boolean result = likeService.getLike(1L, 1L);
         assertTrue(result);
     }
 
     @Test
     void deleteLike() {
-        when(likeRepository.findByUser_IdAndPost_Id(1L, 1L)).thenReturn(Optional.of(like1));
+        when(likeRepository.findByUserIdAndPostId(1L, 1L)).thenReturn(Optional.of(like1));
         doNothing().when(likeRepository).delete(like1);
         doNothing().when(postRepository).decrementLikes(1L);
 

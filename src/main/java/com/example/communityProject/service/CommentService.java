@@ -8,7 +8,6 @@ import com.example.communityProject.repository.CommentRepository;
 import com.example.communityProject.repository.PostRepository;
 import com.example.communityProject.repository.UserRepository;
 import com.example.communityProject.security.JwtUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class CommentService {
     private CommentRepository commentRepository;
@@ -31,6 +29,7 @@ public class CommentService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Transactional(readOnly = true)
     public List<CommentDto> getComments(Long postId) {
         return commentRepository.findByPostId(postId)
                 .stream()
@@ -43,11 +42,10 @@ public class CommentService {
         // db에서 게시글, 사용자 조회 및 예외 발생
         Post post = postRepository.findById(postId)
                 .orElseThrow(()->new IllegalArgumentException("댓글 생성 실패, 대상 게시글이 없습니다."));
-        log.info(dto.toString());
         User user = userRepository.findById(dto.getAuthorId())
                 .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패, 작성자 ID가 유효하지 않습니다."));
         // 댓글 entity 생성
-        Comment comment = Comment.createComment(dto, post, user, LocalDateTime.now());
+        Comment comment = createComment(dto, post, user, LocalDateTime.now());
         // 댓글 entity를 db에 저장
         Comment created=commentRepository.save(comment);
         // dto로 변환해 반환
@@ -62,7 +60,6 @@ public class CommentService {
         Comment target = commentRepository.findById(commentId)
                 .orElseThrow(()-> new IllegalArgumentException("댓글 수정 실패, 대상 댓글이 없습니다."));
         // 현재 로그인한 사용자가 작성자인지 확인
-        log.info("댓글 작성자: "+target.getUser().getId()+"로그인한 사용자: "+userId);
         if (!target.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
@@ -89,5 +86,30 @@ public class CommentService {
         commentRepository.delete(target);
         // 삭제 댓글을 dto로 변환해 반환
         return CommentDto.createCommentDto(target);
+    }
+
+    public Comment createComment(CommentDto dto, Post post, User user, LocalDateTime createdAt) {
+        // 예외 발생
+        validateCommentDto(dto, user, post);
+
+        return new Comment(
+                dto.getId(),
+                post,
+                user,
+                dto.getBody(),
+                createdAt
+       );
+    }
+
+    private void validateCommentDto(CommentDto dto, User user, Post post) {
+        if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
+            throw new IllegalArgumentException("댓글 생성 실패, 댓글의 id가 없어야 합니다.");
+        }
+        if (dto.getPostId() != post.getId()) { // json 데이터와 url요청 정보가 다르면 안됨.(dto에서 가져온 부모 게시글과 entity에서 가져온 부모 게시글의 id가 다르면 안됨.)
+            throw new IllegalArgumentException("댓글 생성 실패, 게시글의 id가 잘못됐습니다.");
+        }
+        if (dto.getAuthorId() != user.getId()) {
+            throw new IllegalArgumentException("댓글 생성 실패, 작성자의 id가 잘못됐습니다.");
+        }
     }
 }

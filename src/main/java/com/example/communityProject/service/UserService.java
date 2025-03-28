@@ -1,13 +1,10 @@
 package com.example.communityProject.service;
 
 import com.example.communityProject.dto.UserDto;
-import com.example.communityProject.entity.Like;
 import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
 import com.example.communityProject.security.JwtUtil;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,10 +17,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class UserService {
     private final PostRepository postRepository;
@@ -45,6 +42,7 @@ public class UserService {
     @Value("${file.upload-dir}") // application.properties에서 설정한 경로
     String uploadDir;
 
+    @Transactional(readOnly = true)
     public List<UserDto> getUserList() {
         return userRepository.findAll()
                 .stream()
@@ -52,7 +50,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDto getUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 조회 실패, 대상 사용자가 없습니다."));
@@ -61,7 +59,7 @@ public class UserService {
 
     @Transactional
     public UserDto createUser(UserDto dto) {
-        User user = User.createUser(dto, passwordEncoder);
+        User user = createUser(dto, passwordEncoder);
         User created = userRepository.save(user);
         return UserDto.createUserDto(created);
     }
@@ -76,7 +74,9 @@ public class UserService {
         }
         target.patch(dto);
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) { // 비밀번호 변경이 있을 때만 암호화 적용
-            target.setPassword(passwordEncoder.encode(dto.getPassword()));
+            target = target.toBuilder()
+                    .password(passwordEncoder.encode(dto.getPassword()))
+                    .build();
         }
         User updated = userRepository.save(target);
         return UserDto.createUserDto(updated);
@@ -91,11 +91,21 @@ public class UserService {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
 
-        likeRepository.deleteByUser_Id(id);
-        commentRepository.deleteByUser_Id(id);
+        // 사용자가 좋아요를 누른 모든 게시글 ID를 가져옴
+        List<Long> likedPostIds = likeRepository.findPostIdsByUserId(userId);
+
+        // 사용자가 눌렀던 좋아요 삭제
+        likeRepository.deleteByUserId(userId);
+
+        // 각 게시글의 좋아요 수 감소
+        for (Long postId : likedPostIds) {
+            postRepository.decrementLikes(postId);
+        }
+
+        commentRepository.deleteByUserId(id);
 
         // 사용자가 작성한 게시글 ID 조회
-        List<Long> postIds = postRepository.findIdsByUser_Id(id);
+        List<Long> postIds = postRepository.findIdsByUserId(id);
 
         // 해당 게시글과 관련된 모든 좋아요, 댓글 삭제
         if (!postIds.isEmpty()) {
@@ -103,12 +113,13 @@ public class UserService {
             commentRepository.deleteByPost_IdIn(postIds);
         }
         // 게시글 삭제
-        postRepository.deleteByUser_Id(id);
+        postRepository.deleteByUserId(id);
 
         userRepository.delete(target);
         return UserDto.createUserDto(target);
     }
 
+    @Transactional(readOnly = true)
     public UserDto authenticateUser(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
@@ -132,7 +143,10 @@ public class UserService {
             }
         }
         // 새로운 이미지 설정
-        user.setProfileImageUrl(imageUrl);
+        user = user.toBuilder()
+                .profileImageUrl(imageUrl)
+                .build();
+
         User updatedUser = userRepository.save(user);
 
         return UserDto.createUserDto(updatedUser);
@@ -160,10 +174,31 @@ public class UserService {
         return filePath.toString(); // Return local file path
     }
 
+    @Transactional(readOnly = true)
     public String getProfileImagePath(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 이미지 불러오기 실패, 대상 사용자가 없습니다."));
 
         return user.getProfileImageUrl();
+    }
+
+    public User createUser(UserDto dto, PasswordEncoder passwordEncoder) {
+        validateUserDto(dto);
+        return new User(
+                null,
+                dto.getEmail(),
+                passwordEncoder.encode(dto.getPassword()),
+                dto.getNickname(),
+                null, // 프로필 이미지는 별도로 저장
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+    }
+
+    private void validateUserDto(UserDto dto){
+        if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
+            throw new IllegalArgumentException("사용자 생성 실패, 사용자의 id가 없어야 합니다.");
+        }
     }
 }

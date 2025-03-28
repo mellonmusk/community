@@ -60,34 +60,38 @@ class PostServiceTest {
     void setUp() {
         postService = new PostService(postRepository, userRepository, commentRepository, likeRepository, imageRepository, imageService, jwtUtil);
 
-        user = new User();
-        user.setId(1L);
+        user = User.builder()
+                .id(1L).
+                build();
 
-        image = new Image();
-        image.setFileName("test file name");
+        image = Image.builder()
+                .fileName("test file name")
+                .build();
 
-        newImage = new Image();
-        newImage.setFileName("new file name");
+        newImage = Image.builder()
+                .fileName("new file name")
+                .build();
 
-        post = new Post();
-        post.setUser(user);
-        post.setTitle("Test Title");
-        post.setContent("Test Content");
-        post.setViews(0L);
-        post.setImages(new ArrayList<>(List.of(image)));
-        postRepository.save(post);
+        post = Post.builder()
+                .title("Test Title")
+                .content("Test Content")
+                .user(user)
+                .likes(0L)
+                .views(0L)
+                .images(new ArrayList<>(List.of(image)))
+                .build();
 
-        postDto = new PostDto();
-        postDto.setAuthorId(1L);
-        postDto.setTitle("Test Title");
-        postDto.setContent("Test Content");
-        postDto.setViews(0L);
+        postDto = PostDto.builder()
+                .authorId(1L)
+                .title("Test Title")
+                .content("Test Content")
+                .views(0L)
+                .likes(0L)
+                .build();
 
         comment = new Comment(1L, post, user, "comment body", LocalDateTime.now());
 
         like = new Like(1L, post, user);
-
-
     }
 
     @Test
@@ -109,7 +113,10 @@ class PostServiceTest {
     void createPost() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         LocalDateTime createdAt = LocalDateTime.now();
-        post.setCreatedAt(createdAt);
+        post = post.toBuilder()
+                .createdAt(createdAt)
+                .user(user)
+                .build();
         when(postRepository.save(any())).thenReturn(post);
         PostDto createdDto = postService.createPost(postDto);
         postDto.setCreatedAt(createdAt);
@@ -140,8 +147,10 @@ class PostServiceTest {
         postDto.setContent("Updated Content");
 
         // When (postRepository.save()가 수정된 게시글을 반환)
-        post.setTitle("Updated Title");
-        post.setContent("Updated Content");
+        post = post.toBuilder()
+                .title("Updated Title")
+                .content("Updated Content")
+                .build();
         when(postRepository.save(any())).thenReturn(post);
 
         // Act (서비스 호출)
@@ -169,7 +178,7 @@ class PostServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
         doNothing().when(commentRepository).deleteByPost_Id(1L);
-        doNothing().when(likeRepository).deleteByPost_Id(1L);
+        doNothing().when(likeRepository).deleteByPostId(1L);
         doNothing().when(imageRepository).deleteByPost_Id(1L);
 
         doNothing().when(postRepository).delete(any());
@@ -179,7 +188,7 @@ class PostServiceTest {
         assertEquals(postDto.getAuthorId(), deletedPostDto.getAuthorId());
 
         verify(commentRepository, times(1)).deleteByPost_Id(1L);
-        verify(likeRepository, times(1)).deleteByPost_Id(1L);
+        verify(likeRepository, times(1)).deleteByPostId(1L);
         verify(imageRepository, times(1)).deleteByPost_Id(1L);
         verify(postRepository, times(1)).delete(any());
     }
@@ -196,7 +205,9 @@ class PostServiceTest {
 
         // 기존 이미지가 존재하는 경우 삭제하도록 설정
         List<Image> images = new ArrayList<>(List.of(image));
-        post.setImages(images);
+        post = post.toBuilder()
+                .images(images)
+                .build();
 
         doNothing().when(imageService).deleteImage(image.getId());
         when(postRepository.save(any(Post.class))).thenReturn(post);
@@ -204,7 +215,7 @@ class PostServiceTest {
         PostDto updatedPostDto = postService.updatePostImage(1L, file);
 
         assertNotNull(updatedPostDto);
-        assertEquals(newImage.getFileName(), post.getImages().get(0).getFileName());
+        assertEquals(newImage.getFileName(), updatedPostDto.getImage());
         verify(imageService).deleteImage(image.getId());
         verify(imageService).saveImage(file);
     }

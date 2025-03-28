@@ -3,7 +3,7 @@ package com.example.communityProject.entity;
 import com.example.communityProject.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "MEMBER")
 @Getter
-@Setter
+@Builder(toBuilder = true)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB가 id 자동 생성
@@ -31,34 +31,20 @@ public class User {
     private String profileImageUrl; // 프로필 이미지 URL 저장
 
     // Bidirectional one-to-many mapping for comments.
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 5)
     private List<Comment> comments = new ArrayList<>();
 
     // Bidirectional one-to-many mapping for likes.
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
     // Bidirectional one-to-many mapping for posts.
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
-
-    public static User createUser(UserDto dto, PasswordEncoder passwordEncoder) {
-        // 예외 발생
-        if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
-            throw new IllegalArgumentException("사용자 생성 실패, 사용자의 id가 없어야 합니다.");
-        }
-        // 엔티티 생성 및 반환
-        return new User(
-                null,
-                dto.getEmail(),
-                passwordEncoder.encode(dto.getPassword()),
-                dto.getNickname(),
-                null, // 프로필 이미지는 별도로 저장
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>()
-        );
-    }
 
     public void patch(UserDto dto) {
         // 예외 발생
