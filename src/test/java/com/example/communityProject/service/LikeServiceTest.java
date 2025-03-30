@@ -71,12 +71,6 @@ class LikeServiceTest {
         dto = new LikeDto(null, 1L, 1L);
     }
 
-//    @Test
-//    void countByPostId() {
-//        when(likeRepository.countByPostId(1L)).thenReturn(2L);
-//        Long cnt = likeService.countByPostId(1L);
-//        assertEquals(2L, cnt);
-//    }
 
     @Test
     void createLike() {

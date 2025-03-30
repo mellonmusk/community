@@ -8,6 +8,7 @@ import com.example.communityProject.repository.CommentRepository;
 import com.example.communityProject.repository.PostRepository;
 import com.example.communityProject.repository.UserRepository;
 import com.example.communityProject.security.JwtUtil;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,8 @@ class CommentServiceTest {
     private Post post;
     private Comment comment;
     private CommentDto commentDto;
+    private String token = "mockToken";
+
 
     @BeforeEach
     void setUp() {
@@ -60,13 +63,15 @@ class CommentServiceTest {
                 .build();
 
         comment = Comment.builder()
+                .id(1L)
+                .body("Original Comment")
                 .user(user)
                 .post(post)
-                .body("Test Comment")
                 .build();
 
         commentDto = CommentDto.builder()
-                .authorId(user.getId())
+                .authorId(1L)
+                .body("Updated Comment")
                 .build();
     }
 
@@ -92,52 +97,89 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("댓글을 수정하면 수정된 댓글 Dto를 반환해야 한다.")
-    void updateComment() {
-        String token = "dummyToken";
+    @DisplayName("patchComment: 댓글이 성공적으로 수정된다")
+    @Transactional
+    void patchComment_Success() {
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        commentDto = commentDto.toBuilder().id(1L).build();
+        Comment updatedComment =commentService.patchComment(comment, commentDto);
+
+        assertNotNull(updatedComment);
+        assertEquals("Updated Comment", updatedComment.getBody());
+    }
+
+    @Test
+    @DisplayName("patchComment: ID가 일치하지 않으면 예외가 발생한다")
+    void patchComment_InvalidId_ExceptionThrown() {
+        commentDto = commentDto.toBuilder().id(2L).build();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.patchComment(comment, commentDto)
+        );
+
+        assertEquals("댓글 수정 실패, 잘못된 id가 입력됐습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("updateComment: 사용자가 본인 댓글을 성공적으로 수정한다")
+    @Transactional
+    void updateComment_Success() {
         when(jwtUtil.getUserIdFromToken(token)).thenReturn(1L);
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        CommentDto updatedDto = CommentDto.builder()
-                .authorId(user.getId())
-                .body("Updated Comment")
-                .createdAt(LocalDateTime.now())
-                .build();
+        commentDto = commentDto.toBuilder().id(1L).build();
+        CommentDto updatedDto = commentService.updateComment(1L, commentDto, token);
 
-        CommentDto updatedCommentDto = commentService.updateComment(1L, updatedDto, token);
-        assertNotNull(updatedCommentDto);
-        assertEquals(updatedDto.getBody(), updatedCommentDto.getBody());
+        assertNotNull(updatedDto);
+        assertEquals("Updated Comment", updatedDto.getBody());
     }
 
     @Test
-    @DisplayName("댓글 수정 시, 작성자가 아닌 경우 예외가 발생해야 한다.")
-    void updateComment_ShouldThrowException_WhenUserNotAuthorized() {
+    @DisplayName("updateComment: 사용자가 본인 댓글이 아닐 경우 예외 발생")
+    void updateComment_Forbidden_ExceptionThrown() {
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(2L);
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(jwtUtil.getUserIdFromToken(any())).thenReturn(2L);
 
-        assertThrows(IllegalArgumentException.class, () -> commentService.updateComment(1L, commentDto, "token"));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.updateComment(1L, commentDto, token)
+        );
+
+        assertEquals("수정 권한이 없습니다.", exception.getMessage());
     }
 
-    @Test
-    @DisplayName("댓글 삭제 시, 작성자가 아닌 경우 예외가 발생해야 한다.")
-    void deleteComment_ShouldThrowException_WhenUserNotAuthorized() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(jwtUtil.getUserIdFromToken(any())).thenReturn(2L);
 
-        assertThrows(IllegalArgumentException.class, () -> commentService.deleteComment(1L, "token"));
-    }
+@Test
+@DisplayName("댓글 수정 시, 작성자가 아닌 경우 예외가 발생해야 한다.")
+void updateComment_ShouldThrowException_WhenUserNotAuthorized() {
+    when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+    when(jwtUtil.getUserIdFromToken(any())).thenReturn(2L);
 
-    @Test
-    @DisplayName("댓글을 삭제하면 삭제된 댓글의 Dto를 반환되어야 한다")
-    void deleteComment() {
-        String token = "dummyToken";
-        when(jwtUtil.getUserIdFromToken(token)).thenReturn(1L);
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        doNothing().when(commentRepository).delete(comment);
+    assertThrows(IllegalArgumentException.class, () -> commentService.updateComment(1L, commentDto, "token"));
+}
 
-        CommentDto deletedCommentDto = commentService.deleteComment(1L, token);
-        assertNotNull(deletedCommentDto);
-        assertEquals(comment.getBody(), deletedCommentDto.getBody());
-    }
+@Test
+@DisplayName("댓글 삭제 시, 작성자가 아닌 경우 예외가 발생해야 한다.")
+void deleteComment_ShouldThrowException_WhenUserNotAuthorized() {
+    when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+    when(jwtUtil.getUserIdFromToken(any())).thenReturn(2L);
+
+    assertThrows(IllegalArgumentException.class, () -> commentService.deleteComment(1L, "token"));
+}
+
+@Test
+@DisplayName("댓글을 삭제하면 삭제된 댓글의 Dto를 반환되어야 한다")
+void deleteComment() {
+    String token = "dummyToken";
+    when(jwtUtil.getUserIdFromToken(token)).thenReturn(1L);
+    when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+    doNothing().when(commentRepository).delete(comment);
+
+    CommentDto deletedCommentDto = commentService.deleteComment(1L, token);
+    assertNotNull(deletedCommentDto);
+    assertEquals(comment.getBody(), deletedCommentDto.getBody());
+}
 }

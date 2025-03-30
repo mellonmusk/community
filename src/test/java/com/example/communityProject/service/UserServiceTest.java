@@ -4,6 +4,8 @@ import com.example.communityProject.dto.UserDto;
 import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
 import com.example.communityProject.security.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,6 +54,7 @@ class UserServiceTest {
 
     private User user;
     private UserDto userDto;
+    private String token = "mock token";
 
     @BeforeEach
     void setUp() {
@@ -104,11 +107,52 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("삭제 권한이 없는 사용자가 삭제를 시도하면 예외가 발생한다")
-    void deleteUser_ShouldThrowException_WhenUserNotAuthorized() {
+    @DisplayName("사용자가 정상적으로 삭제된다")
+    @Transactional
+    void deleteUser_Success() {
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(jwtUtil.getUserIdFromToken(any())).thenReturn(2L);
-        assertThrows(IllegalArgumentException.class, () -> userService.deleteUser(1L, "token"));
+        when(likeRepository.findPostIdsByUserId(1L)).thenReturn(List.of(100L, 101L));
+        when(postRepository.findIdsByUserId(1L)).thenReturn(List.of(200L, 201L));
+
+        UserDto deletedUser = userService.deleteUser(1L, token);
+
+        assertNotNull(deletedUser);
+        assertEquals(1L, deletedUser.getId());
+        verify(likeRepository).deleteByUserId(1L);
+        verify(postRepository, times(2)).decrementLikes(anyLong());
+        verify(commentRepository).deleteByUserId(1L);
+        verify(likeRepository).deleteByPost_IdIn(anyList());
+        verify(commentRepository).deleteByPost_IdIn(anyList());
+        verify(postRepository).deleteByUserId(1L);
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    @DisplayName("삭제 시 대상 사용자가 존재하지 않으면 예외 발생")
+    void deleteUser_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> userService.deleteUser(1L, token)
+        );
+
+        assertEquals("사용자 삭제 실패, 대상 사용자가 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("삭제 권한이 없는 경우 예외 발생")
+    void deleteUser_Forbidden() {
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(2L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.deleteUser(1L, token)
+        );
+
+        assertEquals("수정 권한이 없습니다.", exception.getMessage());
     }
 
     @Test
@@ -132,7 +176,7 @@ class UserServiceTest {
                 .build();
 
         when(userRepository.save(any())).thenReturn(modifiedUser);
-        UserDto updatedUser = userService.updateUser(1L, modifiedDto, "token");
+        UserDto updatedUser = userService.updateUser(1L, modifiedDto, token);
         assertNotNull(updatedUser);
     }
 
@@ -182,7 +226,7 @@ class UserServiceTest {
 
         UserDto updatedDto = userService.updateProfileImage(1L, "newImageUrl");
         assertNotNull(updatedDto);
-        assertEquals("newImageUrl", updatedDto.getProfileImage());
+        assertEquals("newImageUrl", updatedDto.getProfileImageUrl());
     }
 
     @Test
@@ -197,7 +241,7 @@ class UserServiceTest {
         );
 
         // 테스트용 업로드 폴더 설정
-        String testUploadDir = "test-uploads/";
+        String testUploadDir = "test-uploads/users/";
         Path testPath = Paths.get(testUploadDir);
 
         // 디렉토리 생성 (없으면)

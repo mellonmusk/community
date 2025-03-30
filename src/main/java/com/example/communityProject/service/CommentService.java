@@ -41,16 +41,28 @@ public class CommentService {
     public CommentDto createComment(Long postId, CommentDto dto) {
         // db에서 게시글, 사용자 조회 및 예외 발생
         Post post = postRepository.findById(postId)
-                .orElseThrow(()->new IllegalArgumentException("댓글 생성 실패, 대상 게시글이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패, 대상 게시글이 없습니다."));
         User user = userRepository.findById(dto.getAuthorId())
                 .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패, 작성자 ID가 유효하지 않습니다."));
         // 댓글 entity 생성
         Comment comment = createComment(dto, post, user, LocalDateTime.now());
         // 댓글 entity를 db에 저장
-        Comment created=commentRepository.save(comment);
+        Comment created = commentRepository.save(comment);
         // dto로 변환해 반환
         return CommentDto.createCommentDto(created);
 
+    }
+
+    @Transactional
+    public Comment patchComment(Comment comment, CommentDto dto) {
+        // 예외 발생
+        if (!comment.getId().equals(dto.getId()))
+            throw new IllegalArgumentException("댓글 수정 실패, 잘못된 id가 입력됐습니다.");
+        // 객체 갱신
+        if (dto.getBody() != null) {
+            comment = comment.toBuilder().body(dto.getBody()).build();
+        }
+        return commentRepository.save(comment);
     }
 
     @Transactional
@@ -58,13 +70,13 @@ public class CommentService {
         Long userId = jwtUtil.getUserIdFromToken(token);
         // db에서 댓글 조회 및 예외 발생
         Comment target = commentRepository.findById(commentId)
-                .orElseThrow(()-> new IllegalArgumentException("댓글 수정 실패, 대상 댓글이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("댓글 수정 실패, 대상 댓글이 없습니다."));
         // 현재 로그인한 사용자가 작성자인지 확인
         if (!target.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
         // 댓글 수정
-        target.patch(dto);
+        target = patchComment(target, dto);
         // db 갱신
         Comment updated = commentRepository.save(target);
         // 댓글 entity를 dto로 변환해 반환
@@ -77,7 +89,7 @@ public class CommentService {
 
         // 댓글 조회 및 예외 발생
         Comment target = commentRepository.findById(commentId)
-                .orElseThrow(()->new IllegalArgumentException("댓글 삭제 실패, 대상 댓글이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("댓글 삭제 실패, 대상 댓글이 없습니다."));
         // 작성자와 현재 로그인한 사용자 비교
         if (!target.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
@@ -98,11 +110,11 @@ public class CommentService {
                 user,
                 dto.getBody(),
                 createdAt
-       );
+        );
     }
 
     private void validateCommentDto(CommentDto dto, User user, Post post) {
-        if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
+        if (dto.getId() != null) { // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
             throw new IllegalArgumentException("댓글 생성 실패, 댓글의 id가 없어야 합니다.");
         }
         if (dto.getPostId() != post.getId()) { // json 데이터와 url요청 정보가 다르면 안됨.(dto에서 가져온 부모 게시글과 entity에서 가져온 부모 게시글의 id가 다르면 안됨.)

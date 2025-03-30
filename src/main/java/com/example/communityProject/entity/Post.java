@@ -1,8 +1,10 @@
 package com.example.communityProject.entity;
 
 import com.example.communityProject.dto.PostDto;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,6 +37,12 @@ public class Post {
 
     private Long likes;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 5)
+    @JsonManagedReference
+    private List<Comment> comments = new ArrayList<>();
+
     @Column
     @Builder.Default
     private Long views=0L;
@@ -42,22 +50,4 @@ public class Post {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public void patch(PostDto dto) {
-        // 예외 발생
-        if(this.id != dto.getId())
-            throw new IllegalArgumentException("게시글 수정 실패, 잘못된 id가 입력됐습니다.");
-        // 객체 갱신
-        if (dto.getTitle() != null) {
-            this.title = dto.getTitle();
-        }
-        if (dto.getContent() != null) {
-            this.content = dto.getContent();
-        }
-        if (dto.getLikes() != null) {
-            this.likes = dto.getLikes();
-        }
-        if (dto.getViews() != null) {
-            this.views = dto.getViews();
-        }
-    }
 }

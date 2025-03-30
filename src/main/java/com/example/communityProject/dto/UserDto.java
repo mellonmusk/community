@@ -11,10 +11,15 @@ import lombok.*;
 @ToString
 public class UserDto {
     private Long id;
+
     private String email;
+
     private String password;
+
     private String nickname;
-    private String profileImage;
+
+    private String profileImageUrl;
+
 
     public static UserDto createUserDto(User user) {
         return new UserDto(

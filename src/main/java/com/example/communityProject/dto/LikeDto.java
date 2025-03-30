@@ -12,8 +12,11 @@ import lombok.ToString;
 @Getter
 public class LikeDto {
     private Long id;
+
     private Long postId;
+
     private Long userId;
+
 
     public static LikeDto createLikeDto(Like like) {
         return new LikeDto(

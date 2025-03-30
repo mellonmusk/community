@@ -10,6 +10,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Entity
 @Table(name = "MEMBER")
 @Getter
@@ -28,46 +29,21 @@ public class User {
     @Column(unique = true, length=10)
     private String nickname;
 
-    private String profileImageUrl; // 프로필 이미지 URL 저장
+    private String profileImageUrl;
 
-    // Bidirectional one-to-many mapping for comments.
+    // Bidirectional one-to-many mapping for comments
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 5)
     private List<Comment> comments = new ArrayList<>();
 
-    // Bidirectional one-to-many mapping for likes.
+    // Bidirectional one-to-many mapping for likes
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
-    // Bidirectional one-to-many mapping for posts.
+    // Bidirectional one-to-many mapping for posts
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
-
-    public void patch(UserDto dto) {
-        // 예외 발생
-        if(this.id != dto.getId())
-            throw new IllegalArgumentException("사용자 수정 실패, 잘못된 id가 입력됐습니다.");
-        // 객체 갱신
-        if (dto.getEmail() != null) {
-            this.email = dto.getEmail();
-        }
-        if (dto.getNickname() != null) {
-            this.nickname = dto.getNickname();
-        }
-        if(dto.getProfileImage() != null) {
-            this.profileImageUrl = dto.getProfileImage();
-        }
-    }
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
-    }
-
 }

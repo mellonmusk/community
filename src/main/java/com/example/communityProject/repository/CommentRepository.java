@@ -9,6 +9,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
+    // 게시글 목록 조회 시 한 번의 쿼리로 모든 댓글 조회
+    @Query("SELECT c FROM Comment c WHERE c.post.id IN :postIds")
+    List<Comment> findAllByPostIds(@Param("postIds") List<Long> postIds);
+
     // 특정 게시글의 모든 댓글 조회
     @Query(value = "SELECT * FROM Comment WHERE post_id = :postId", nativeQuery = true)
     List<Comment> findByPostId(Long postId);

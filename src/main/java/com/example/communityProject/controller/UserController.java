@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +33,6 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getUserList() {
         List<UserDto> userList = userService.getUserList();
         return ResponseEntity.status(HttpStatus.OK).body(userList);
-    }
-
-    // 사용자 프로필 조회
-    @GetMapping("/api/users/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
-        UserDto dto = userService.getUser(id);
-        return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
 
     @PostMapping("/api/users/login")
@@ -93,7 +88,7 @@ public class UserController {
     public ResponseEntity<UserDto> uploadProfileImage(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
         try {
             String imageUrl = userService.saveImageToLocalFile(file, userId);
-            UserDto updatedUser = userService. updateProfileImage(userId, imageUrl);
+            UserDto updatedUser = userService.updateProfileImage(userId, imageUrl);
             return ResponseEntity.ok(updatedUser);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -102,8 +97,27 @@ public class UserController {
         }
     }
 
+    // 사용자 프로필 조회(프로필 이미지도 함께 반환)
+    @GetMapping("/api/users/{id}")
+    public ResponseEntity<UserDto> getUserWithProfileImage(@PathVariable Long id) {
+        UserDto dto = userService.getUser(id);
+        String imagePath = userService.getProfileImagePath(id);
 
-    // 프로필 이미지 조회
+        if (!imagePath.isEmpty()) {
+            try {
+                byte[] imageData = Files.readAllBytes(Paths.get(imagePath));
+                String base64Image = Base64.getEncoder().encodeToString(imageData);
+                dto=dto.toBuilder().profileImageUrl(base64Image).build();
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
+        return ResponseEntity.ok(dto);
+    }
+
+
+    // 프로필 이미지만 조회
     @GetMapping("/api/images/user/{id}")
     public ResponseEntity<byte[]> getProfileImage(@PathVariable Long id) {
         String imagePath = userService.getProfileImagePath(id);

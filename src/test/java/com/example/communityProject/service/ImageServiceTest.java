@@ -38,7 +38,7 @@ class ImageServiceTest {
 
     private ImageService imageService;
 
-    private String uploadDir = "uploads/";
+    private String uploadDir = "test-uploads/posts/";
 
     @BeforeEach
     void setUp() {
@@ -63,7 +63,7 @@ class ImageServiceTest {
                 "test image content".getBytes()
         );
 
-        Image mockImage = new Image("test-image.jpg", "uploads/dir/test-image.jpg");
+        Image mockImage = new Image("test-image.jpg", uploadDir+"test-image.jpg");
         when(imageRepository.save(any(Image.class))).thenReturn(mockImage); // mockImage를 반환하도록 설정
 
         Image savedImage = imageService.saveImage(file);

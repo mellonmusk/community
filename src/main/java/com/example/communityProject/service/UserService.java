@@ -50,11 +50,17 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public UserDto getUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 조회 실패, 대상 사용자가 없습니다."));
         return UserDto.createUserDto(user);
+    }
+
+    @Transactional
+    public String getProfileImagePath(Long userId) {
+        UserDto userDto = getUser(userId);
+        return userDto.getProfileImageUrl();
     }
 
     @Transactional
@@ -65,6 +71,24 @@ public class UserService {
     }
 
     @Transactional
+    public User patchUser(User user, UserDto dto) {
+        // 예외 발생
+        if(!user.getId().equals(dto.getId()))
+            throw new IllegalArgumentException("사용자 수정 실패, 잘못된 id가 입력됐습니다.");
+        // 객체 갱신
+        if (dto.getEmail() != null) {
+            user = user.toBuilder().email(dto.getEmail()).build();
+        }
+        if (dto.getNickname() != null) {
+            user = user.toBuilder().nickname(dto.getNickname()).build();
+        }
+        if(dto.getProfileImageUrl() != null) {
+            user = user.toBuilder().profileImageUrl(dto.getProfileImageUrl()).build();
+        }
+        return userRepository.save(user);
+    }
+
+    @Transactional
     public UserDto updateUser(Long id, UserDto dto, String token) {
         Long userId = jwtUtil.getUserIdFromToken(token);
         User target = userRepository.findById(id)
@@ -72,7 +96,7 @@ public class UserService {
         if (!target.getId().equals(userId)) {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
-        target.patch(dto);
+        target = patchUser(target, dto);
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) { // 비밀번호 변경이 있을 때만 암호화 적용
             target = target.toBuilder()
                     .password(passwordEncoder.encode(dto.getPassword()))
@@ -93,20 +117,18 @@ public class UserService {
 
         // 사용자가 좋아요를 누른 모든 게시글 ID를 가져옴
         List<Long> likedPostIds = likeRepository.findPostIdsByUserId(userId);
-
         // 사용자가 눌렀던 좋아요 삭제
         likeRepository.deleteByUserId(userId);
-
         // 각 게시글의 좋아요 수 감소
         for (Long postId : likedPostIds) {
             postRepository.decrementLikes(postId);
         }
 
+        // 사용자가 작성한 댓글 삭제
         commentRepository.deleteByUserId(id);
 
         // 사용자가 작성한 게시글 ID 조회
         List<Long> postIds = postRepository.findIdsByUserId(id);
-
         // 해당 게시글과 관련된 모든 좋아요, 댓글 삭제
         if (!postIds.isEmpty()) {
             likeRepository.deleteByPost_IdIn(postIds);
@@ -115,6 +137,7 @@ public class UserService {
         // 게시글 삭제
         postRepository.deleteByUserId(id);
 
+        // 사용자 삭제
         userRepository.delete(target);
         return UserDto.createUserDto(target);
     }
@@ -172,14 +195,6 @@ public class UserService {
         Files.write(filePath, file.getBytes());
 
         return filePath.toString(); // Return local file path
-    }
-
-    @Transactional(readOnly = true)
-    public String getProfileImagePath(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 이미지 불러오기 실패, 대상 사용자가 없습니다."));
-
-        return user.getProfileImageUrl();
     }
 
     public User createUser(UserDto dto, PasswordEncoder passwordEncoder) {

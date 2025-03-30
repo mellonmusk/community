@@ -20,7 +20,7 @@ public class PostController {
     // 게시글 목록 조회
     @GetMapping("/api/posts")
     public ResponseEntity<List<PostDto>> getPostList(){
-        List<PostDto> postList = postService.getPostList();
+        List<PostDto> postList = postService.getPostListWithComments();
         return ResponseEntity.status(HttpStatus.OK).body(postList);
     }
 

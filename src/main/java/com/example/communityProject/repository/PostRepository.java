@@ -13,7 +13,6 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
 //    @Query("SELECT DISTINCT p FROM Post p JOIN FETCH p.user")
 //    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user LEFT JOIN FETCH Comment c ON c.post = p")
-//    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.author LEFT JOIN FETCH p.comments")
     @EntityGraph(attributePaths = {"user"})
     @Query("SELECT p FROM Post p")
     ArrayList<Post> findAll();

@@ -12,10 +12,15 @@ import java.time.LocalDateTime;
 @ToString
 public class CommentDto {
     private Long id;
+
     private Long postId;
+
     private Long authorId;
+
     private String body;
+
     private LocalDateTime createdAt;
+
 
     public static CommentDto createCommentDto(Comment comment) {
         return new CommentDto(
