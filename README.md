@@ -21,8 +21,8 @@ https://youtu.be/-k2UpLSQH3I
 
 
 ### How to Run  
-1. Run the `CommunityProjectApplication.java` file.  
-2. Configure MySQL settings by specifying the username and password in `application.properties`.  
+1. Configure MySQL settings by specifying the username and password in `application.properties`.  
+2. Run the `CommunityProjectApplication.java` file.  
 
 ### Plans to enhance the project  
 - Handling concurrency
