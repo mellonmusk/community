@@ -53,6 +53,7 @@ public class LikeService {
         return LikeDto.createLikeDto(target);
     }
 
+    // create like entity from dto
     public Like createLike(LikeDto dto, User user, Post post) {
         // 예외 발생
         validateLikeDto(dto, user, post);
