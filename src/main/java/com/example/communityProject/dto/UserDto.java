@@ -1,11 +1,9 @@
 package com.example.communityProject.dto;
 
+import com.example.communityProject.common.enums.UserRole;
 import com.example.communityProject.entity.Image;
 import com.example.communityProject.entity.User;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 @AllArgsConstructor
@@ -35,6 +33,8 @@ public class UserDto {
     @NotBlank(message = "프로필 이미지 저장위치는 필수 입력 값입니다.")
     private String profileImageUrl;
 
+    @NotNull(message = "Role cannot be null")
+    private UserRole role;
 
     public static UserDto createUserDto(User user) {
         return new UserDto(
@@ -42,7 +42,8 @@ public class UserDto {
                 user.getEmail(),
                 null,
                 user.getNickname(),
-                user.getProfileImageUrl()
+                user.getProfileImageUrl(),
+                user.getRole()
         );
     }
 }

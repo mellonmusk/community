@@ -38,8 +38,9 @@ public class UserController {
     @PostMapping("/api/users/login")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody UserDto userDto) {
         UserDto authenticatedUser = userService.authenticateUser(userDto.getEmail(), userDto.getPassword());
+        String role = authenticatedUser.getRole().name();
         // JWT 토큰 생성
-        String accessToken = jwtUtil.generateToken(authenticatedUser.getId());
+        String accessToken = jwtUtil.generateToken(authenticatedUser.getId(), role);
         // 응답 객체 생성 (토큰 + 유저 정보 포함)
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("user", authenticatedUser);

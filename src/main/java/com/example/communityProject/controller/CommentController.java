@@ -5,6 +5,7 @@ import com.example.communityProject.service.CommentService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +25,9 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(dtos);
     }
 
-    // 댓글 생성
+
+    // 댓글 생성 (Only TA or Professor)
+    @PreAuthorize("hasRole('TA') or hasRole('PROFESSOR')")
     @PostMapping("/api/posts/{postId}/comments")
     public ResponseEntity<CommentDto> createComment(@PathVariable Long postId,
                                                     @RequestBody CommentDto dto) {
@@ -32,7 +35,8 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(createdDto);
     }
 
-    // 댓글 수정
+    // 댓글 수정 (Only TA or Professor)
+    @PreAuthorize("hasRole('TA') or hasRole('PROFESSOR')")
     @PatchMapping("/api/comments/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable Long commentId,
                                                     @RequestBody CommentDto dto,
@@ -48,7 +52,8 @@ public class CommentController {
         }
     }
 
-    // 댓글 삭제
+    // 댓글 삭제 (Only TA or Professor)
+    @PreAuthorize("hasRole('TA') or hasRole('PROFESSOR')")
     @DeleteMapping("/api/comments/{commentId}")
     public ResponseEntity<CommentDto> deleteComment(@PathVariable Long commentId, @RequestHeader("Authorization") String token) {
         try {

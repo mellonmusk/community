@@ -24,8 +24,9 @@ public class JwtUtil {
     }
 
     // userId 기반으로 토큰 생성
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId, String role) {
         Claims claims = Jwts.claims().setSubject(String.valueOf(userId)); // 사용자 ID를 String으로 설정
+        claims.put("role", role); // 역할 추가
         Date now = new Date();
         Date validity = new Date(now.getTime() + expirationTime); // 15분 유효
 
@@ -53,6 +54,18 @@ public class JwtUtil {
         // 'sub' 필드를 Long으로 변환하는 부분
         return Long.valueOf(claims.getSubject());
     }
+
+    public String extractRole(String token) {
+//        return Jwts.parserBuilder()
+//                .setSigningKey(getSigningKey())
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody()
+//                .get("role", String.class); // 역할을 추출
+        Claims claims = extractAllClaims(token);
+        return claims.get("role", String.class);
+    }
+
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()

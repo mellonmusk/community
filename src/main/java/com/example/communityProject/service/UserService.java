@@ -5,6 +5,7 @@ import com.example.communityProject.entity.User;
 import com.example.communityProject.repository.*;
 import com.example.communityProject.security.JwtUtil;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -197,6 +198,7 @@ public class UserService {
         return filePath.toString(); // Return local file path
     }
 
+    // create user entity from dto
     public User createUser(UserDto dto, PasswordEncoder passwordEncoder) {
         validateUserDto(dto);
         return new User(
@@ -207,13 +209,17 @@ public class UserService {
                 null, // 프로필 이미지는 별도로 저장
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                dto.getRole()
         );
     }
 
-    private void validateUserDto(UserDto dto){
+    private void validateUserDto(@Valid UserDto dto){
         if (dto.getId() != null){ // dto에 id가 존재하면 안됨. 엔티티의 id는 db가 자동 생성함.
             throw new IllegalArgumentException("사용자 생성 실패, 사용자의 id가 없어야 합니다.");
+        }
+        if (dto.getRole() == null) {
+            throw new IllegalArgumentException("사용자 생성 실패, 역할이 지정되어야 합니다.");
         }
     }
 }

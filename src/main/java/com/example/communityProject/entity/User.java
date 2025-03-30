@@ -1,6 +1,6 @@
 package com.example.communityProject.entity;
 
-import com.example.communityProject.dto.UserDto;
+import com.example.communityProject.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
@@ -46,4 +46,7 @@ public class User {
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role; // 역할 필드 추가
 }
